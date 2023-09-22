@@ -1,0 +1,9 @@
+{
+    "dotnet.defaultSolution": "Ecommerce.sln",
+    "cSpell.ignoreWords": [
+        "Ecommerce",
+        "appsettings",
+        "rtval"
+    ],
+    "msbuildProjectTools.nuget.includePreRelease": false
+}
