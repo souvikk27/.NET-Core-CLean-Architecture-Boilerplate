@@ -1,5 +1,7 @@
 using Ecommerce.API.Extensions;
+using Ecommerce.LoggerService;
 using Ecommerce.Presentation.ActionFilters;
+using Ecommerce.Presentation.Extensions;
 using Ecommerce.Service;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,8 +22,11 @@ builder.Services.ConfigureLogging();
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
-var app = builder.Build();
 
+var app = builder.Build();
+var logger = app.Services.GetRequiredService<ILoggerManager>();
+
+app.ConfigureExceptionHandler(logger);
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
