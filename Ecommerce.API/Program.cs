@@ -3,6 +3,7 @@ using Ecommerce.LoggerService;
 using Ecommerce.Presentation.ActionFilters;
 using Ecommerce.Presentation.Extensions;
 using Ecommerce.Service;
+using Microsoft.AspNetCore.Mvc.Formatters;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -11,7 +12,12 @@ var configuration = builder.Configuration;
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddControllers();
+builder.Services.AddControllers(config =>
+{
+    config.RespectBrowserAcceptHeader = true;
+    config.OutputFormatters.Add(new XmlSerializerOutputFormatter());
+    config.ReturnHttpNotAcceptable = true;
+}).AddApplicationPart(typeof(Ecommerce.Presentation.AssemblyReference).Assembly);
 builder.Services.AddScoped<ValidationFilterAttribute>();
 builder.Services.ConfigureInfrastructure();
 builder.Services.ConfigureIdentity();
