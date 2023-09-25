@@ -1,4 +1,5 @@
 ﻿using Ecommerce.Domain.Entities;
+using Ecommerce.Domain.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
@@ -24,11 +25,7 @@ namespace Ecommerce.Service
 
         public virtual TEntity GetById(object id)
         {
-            var keyExpression = Key();
-            if (keyExpression == null)
-            {
-                throw new InvalidOperationException("Key expression is not defined for this repository.");
-            }
+            var keyExpression = Key() ?? throw new InvalidOperationException("Key expression is not defined for this repository.");
             // Create a parameter expression for the entity
             var entityParameter = Expression.Parameter(typeof(TEntity), "entity");
             // Access the key property using the Key expression
@@ -40,7 +37,13 @@ namespace Ecommerce.Service
                 entityParameter
             );
             // Use the lambda expression to retrieve the entity by ID
-            return Context.Set<TEntity>().SingleOrDefault(lambda);
+            var entity =  Context.Set<TEntity>().SingleOrDefault(lambda);
+            if (entity == null)
+            {
+                var entityTypeName = typeof(TEntity).Name;
+                throw new NotFoundApiException($"{entityTypeName} with ID '{id}'");
+            }
+            return entity;
         }
 
 

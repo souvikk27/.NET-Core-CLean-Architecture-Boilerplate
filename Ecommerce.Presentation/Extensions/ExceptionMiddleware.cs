@@ -22,10 +22,10 @@ namespace Ecommerce.Presentation.Extensions
                 var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
                 if(contextFeature != null)
                 {
-                    int statusCode = contextFeature.Error switch 
+                    context.Response.StatusCode = contextFeature.Error switch 
                     {
-                        BadRequestApiException => StatusCodes.Status400BadRequest,
                         NotFoundApiException => StatusCodes.Status404NotFound,
+                        BadRequestApiException => StatusCodes.Status400BadRequest,
                         MutedApiException => StatusCodes.Status500InternalServerError,
                         _ => StatusCodes.Status500InternalServerError
                     };

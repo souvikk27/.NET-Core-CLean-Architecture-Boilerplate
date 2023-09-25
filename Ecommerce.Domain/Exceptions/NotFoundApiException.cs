@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Ecommerce.Domain.Exceptions
@@ -13,11 +15,11 @@ namespace Ecommerce.Domain.Exceptions
         {
         }
 
-        public NotFoundApiException(string resourceName) : base($"{NotFoundMessage} ({resourceName})")
+        public NotFoundApiException(string resourceName) : base($"{NotFoundMessage} {resourceName}")
         {
         }
 
-        public NotFoundApiException(string resourceName, Exception innerException) : base($"{NotFoundMessage} ({resourceName})", innerException)
+        public NotFoundApiException(string resourceName, Exception innerException) : base($"{NotFoundMessage} {resourceName}", innerException)
         {
         }
     }
