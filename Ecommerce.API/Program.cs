@@ -18,6 +18,7 @@ builder.Services.ConfigureIdentity();
 builder.Services.ConfigureSqlContext(configuration);
 builder.Services.ConfigureEntityContext(configuration);
 builder.Services.ConfigureSwaggerGen();
+builder.Services.ConfigureCors();
 builder.Services.ConfigureLogging();
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
