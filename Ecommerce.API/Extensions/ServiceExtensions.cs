@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Ecommerce.Domain.Entities;
+using Ecommerce.LoggerService;
 using Ecommerce.Service;
 using Ecommerce.Service.Context;
 using Microsoft.AspNetCore.Identity;
@@ -72,5 +73,8 @@ namespace Ecommerce.API.Extensions
         public static void ConfigureEntityContext(this IServiceCollection services, IConfiguration configuration) =>
             services.AddDbContext<EntityContext>(option =>
                 option.UseSqlServer(configuration.GetConnectionString("SqlConnection")));
+
+        public static void ConfigureLogging(this IServiceCollection services) => 
+            services.AddSingleton<ILoggerManager, LoggerManager>();
     }
 }
