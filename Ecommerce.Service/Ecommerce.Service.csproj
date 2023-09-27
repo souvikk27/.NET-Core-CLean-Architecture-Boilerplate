@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\Ecommerce.Domain\Ecommerce.Domain.csproj" />
     <ProjectReference Include="..\Ecommerce.LoggerService\Ecommerce.LoggerService.csproj" />
+    <ProjectReference Include="..\Ecommerce.Service.Contract\Ecommerce.Service.Contract.csproj" />
   </ItemGroup>
 
   <ItemGroup>
