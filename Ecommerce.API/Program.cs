@@ -23,6 +23,7 @@ builder.Services.ConfigureInfrastructure();
 builder.Services.ConfigureIdentity();
 builder.Services.ConfigureSqlContext(configuration);
 builder.Services.ConfigureEntityContext(configuration);
+builder.Services.ConfigureDbSeed();
 builder.Services.ConfigureSwaggerGen();
 builder.Services.ConfigureCors();
 builder.Services.ConfigureLogging();
@@ -34,6 +35,7 @@ var app = builder.Build();
 var logger = app.Services.GetRequiredService<ILoggerManager>();
 
 app.ConfigureExceptionHandler(logger);
+app.ConfigureDatabaseSeed();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

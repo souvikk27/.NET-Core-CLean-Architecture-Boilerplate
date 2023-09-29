@@ -6,6 +6,7 @@ using Ecommerce.Domain.Entities;
 using Ecommerce.LoggerService;
 using Ecommerce.Service;
 using Ecommerce.Service.Context;
+using Ecommerce.Service.Seeding;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -85,5 +86,8 @@ namespace Ecommerce.API.Extensions
 
         public static void ConfigureLogging(this IServiceCollection services) => 
             services.AddSingleton<ILoggerManager, LoggerManager>();
+
+        public static void ConfigureDbSeed(this IServiceCollection services) =>
+            services.AddScoped<IContextSeed, ContextSeed>();
     }
 }
