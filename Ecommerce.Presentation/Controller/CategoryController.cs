@@ -54,6 +54,8 @@ namespace Ecommerce.Presentation.Controller
             return Ok(category);
         }
 
+
+
         [HttpPost]
         [ServiceFilter(typeof(ValidationFilterAttribute))]
         public IActionResult AddCategory([FromBody] CategoryDto dto)
@@ -63,6 +65,19 @@ namespace Ecommerce.Presentation.Controller
             repository.Save();
             return ApiResponseExtension.ToSuccessApiResult(category);
         }
+
+
+        [HttpPut]
+        [ServiceFilter(typeof(ValidationFilterAttribute))]
+        public IActionResult UpdateCategory([FromBody] CategoryDto dto)
+        {
+            var category = dto.MaptoCategory();
+            category.ModifiedOn = DateTime.Now;
+            repository.Update(category);
+            repository.Save();
+            return ApiResponseExtension.ToSuccessApiResult(category, "Category updated successfully", "204");
+        }
+
 
         [HttpDelete]
         public IActionResult DeleteCategory(Guid id)

@@ -32,9 +32,10 @@ namespace Ecommerce.Presentation.Extensions
         {
             var category = new Category()
             {
-                Id = Guid.NewGuid(),
+                Id = dto.Id,
                 Name = dto.Name,
-                AddedOn = DateTime.Now,
+                AddedOn = dto.AddedOn,
+                ModifiedOn = dto.ModifiedOn
             };
             return category;
         }

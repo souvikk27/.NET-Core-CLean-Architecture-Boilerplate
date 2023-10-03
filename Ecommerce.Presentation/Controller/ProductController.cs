@@ -79,7 +79,7 @@ namespace Ecommerce.Presentation.Controller
             var product = dto.MaptoProduct();
             var rtval = repository.Update(product);
             repository.Save();
-            return ApiResponseExtension.ToSuccessApiResult(rtval);
+            return ApiResponseExtension.ToSuccessApiResult(rtval, "Product updated successfully", "204");
         }
 
 

@@ -18,13 +18,34 @@ namespace Ecommerce.Domain.Entities.Generic
 
         public T Data { get; set; }
 
-        public ApiResponseModel(ApiResponseStatusEnum status, string message, T data, Guid? apiResponseId = null)
+        public ApiResponseModel(ApiResponseStatusEnum status, string message, T data, string? statusCode = null, Guid? apiResponseId = null)
         {
             ApiResponseId = apiResponseId ?? Guid.NewGuid();
             Status = Enum.GetName(typeof(ApiResponseStatusEnum), status)?.ToLower();
-            StatusCode = (int)status;
+            StatusCode = statusCode != null ? Convert.ToInt32(statusCode) : GetStatusCode(status);
             Message = message;
             Data = data;
+        }
+
+        public int GetStatusCode(ApiResponseStatusEnum status)
+        {
+            int statusCode = 0;
+            switch (status)
+            {
+                case ApiResponseStatusEnum.Success:
+                    statusCode = 200;
+                    break;
+                case ApiResponseStatusEnum.Warning:
+                    statusCode = 429;
+                    break;
+                case ApiResponseStatusEnum.Error:
+                    statusCode = 400;
+                    break;
+                default:
+                    statusCode = 100;
+                    break;
+            }
+            return statusCode;
         }
     }
 
