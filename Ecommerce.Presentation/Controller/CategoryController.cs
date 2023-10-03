@@ -12,6 +12,8 @@ using Ecommerce.Service;
 using Ecommerce.Service.Extensions;
 using Ecommerce.Shared.DTO;
 using Microsoft.AspNetCore.Mvc;
+using AspNetCoreRateLimit;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Ecommerce.Presentation.Controller
 {
@@ -27,6 +29,7 @@ namespace Ecommerce.Presentation.Controller
         
 
         [HttpGet]
+        [RateLimit(5,5)]
         public IActionResult GetAllCategories([FromQuery] CategoryParameters parameters)
         {
             var page = parameters.PageNumber;

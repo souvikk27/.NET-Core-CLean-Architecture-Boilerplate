@@ -19,6 +19,7 @@ builder.Services.AddControllers(config =>
     config.ReturnHttpNotAcceptable = true;
 }).AddApplicationPart(typeof(Ecommerce.Presentation.AssemblyReference).Assembly);
 builder.Services.AddScoped<ValidationFilterAttribute>();
+builder.Services.AddMemoryCache();
 builder.Services.ConfigureInfrastructure();
 builder.Services.ConfigureIdentity();
 builder.Services.ConfigureSqlContext(configuration);
