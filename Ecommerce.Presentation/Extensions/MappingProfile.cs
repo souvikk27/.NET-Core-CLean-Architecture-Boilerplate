@@ -27,5 +27,18 @@ namespace Ecommerce.Presentation.Extensions
             };
             return product;
         }
+
+        public static Category MaptoCategory(this CategoryDto dto)
+        {
+            var category = new Category()
+            {
+                Id = Guid.NewGuid(),
+                Name = dto.Name,
+                AddedOn = DateTime.Now,
+            };
+            return category;
+        }
     }
+
+    
 }

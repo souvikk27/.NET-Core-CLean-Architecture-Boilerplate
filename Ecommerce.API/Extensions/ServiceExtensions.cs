@@ -19,6 +19,7 @@ namespace Ecommerce.API.Extensions
         {
             services.AddTransient<ProductRepository>();
             services.AddScoped(typeof(IRepositoryOptions<>), typeof(RepositoryOptions<>));
+            services.AddTransient<CategoryRepository>();
         }
 
         public static void ConfigureSwaggerGen(this IServiceCollection services)

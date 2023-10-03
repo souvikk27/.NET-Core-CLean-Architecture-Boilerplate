@@ -48,8 +48,7 @@ namespace Ecommerce.Presentation.Controller
 
             var metadata = new MetaData().Initialize(page, pageSize, totalItemCount);
             metadata.AddResponseHeaders(Response);
-
-            var pagedList = new PagedList<Product>(filteredProducts, totalItemCount, page, pageSize);
+            var pagedList = PagedList<Product>.ToPagedList(filteredProducts, page, pageSize);
             return Ok(pagedList);
         }
 
