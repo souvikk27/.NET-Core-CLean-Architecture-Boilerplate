@@ -1,5 +1,6 @@
 ﻿using Ecommerce.Domain.Entities;
 using Ecommerce.Domain.Exceptions;
+using Ecommerce.Service.Abstraction;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;

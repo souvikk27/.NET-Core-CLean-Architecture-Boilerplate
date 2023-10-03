@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ecommerce.Service
+namespace Ecommerce.Service.Abstraction
 {
     public interface IRepositoryOptions<TContext> where TContext : DbContext
     {

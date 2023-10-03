@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Ecommerce.Domain.Entities;
 using Ecommerce.LoggerService;
 using Ecommerce.Service;
+using Ecommerce.Service.Abstraction;
 using Ecommerce.Service.Context;
 using Ecommerce.Service.Seeding;
 using Microsoft.AspNetCore.Identity;
