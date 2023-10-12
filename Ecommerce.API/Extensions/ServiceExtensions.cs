@@ -18,7 +18,8 @@ namespace Ecommerce.API.Extensions
     {
         public static void ConfigureInfrastructure(this IServiceCollection services)
         {
-            services.AddTransient<ProductRepository>();
+            services.AddTransient<IProductRepository, ProductRepository>();
+            services.AddTransient<UserRepository>();
             services.AddScoped(typeof(IRepositoryOptions<>), typeof(RepositoryOptions<>));
             services.AddTransient<CategoryRepository>();
         }

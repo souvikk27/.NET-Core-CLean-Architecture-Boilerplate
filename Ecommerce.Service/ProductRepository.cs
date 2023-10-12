@@ -13,7 +13,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Ecommerce.Service
 {
-    public class ProductRepository : RepositoryBase<Product, EntityContext>
+    public class ProductRepository : RepositoryBase<Product, EntityContext>,IProductRepository
     {
         public ProductRepository(IRepositoryOptions<EntityContext> options) : base(options)
         {
