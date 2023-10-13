@@ -6,6 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
+using Ecommerce.LoggerService;
+#pragma warning disable SYSLIB0023
 
 namespace Ecommerce.Service
 {
@@ -13,39 +15,76 @@ namespace Ecommerce.Service
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly ILoggerManager logger;
         private const int RandomStringLength = 32;
 
-        public UserRepository(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
+        public UserRepository(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ILoggerManager logger)
         {
             _userManager = userManager;
             _roleManager = roleManager;
+            this.logger = logger;
         }
 
         public async Task<ApplicationUser> CreateUser(ApplicationUser user, string password)
         {
-            user.Client_Id = GenerateRandomString();
-            user.Client_Secret = GenerateRandomString();
-            var result = await _userManager.CreateAsync(user, password);
-            if (result.Succeeded)
-            {  
-                return user;
+            var clientIdLength = 10;
+            var clientSecretLength = 15;
+            user.Client_Id = "app-api" + GenerateRandomString(clientIdLength);
+            user.Client_Secret = "app-api" + GenerateRandomString(clientSecretLength);
+            user.Refresh_Token = GenerateRefreshToken();
+
+            if (user.Client_Id.Length >= user.Client_Secret.Length)
+            {
+                // Adjust the length of client_id to be less than client_secret
+                user.Client_Id = "app-api-" + GenerateRandomString(clientSecretLength - 2);
             }
-            else
-            return new ApplicationUser();
+            try
+            {
+                var existingUser = _userManager.FindByNameAsync(user.UserName);
+                if ( existingUser == null)
+                {
+                    var result = await _userManager.CreateAsync(user, password);
+                    if (result.Succeeded)
+                    {
+                        return user;
+                    }
+                    else
+                        return new ApplicationUser();
+                }
+                else
+                    return null;
+            }
+            catch(Exception ex)
+            {
+                logger.LogError(ex.Message);
+                throw;
+            }
         }
 
 
 
 
-        
 
-        public static string GenerateRandomString()
+
+        private static string GenerateRandomString(int length)
         {
-            using (var rng = new RNGCryptoServiceProvider())
+            const string chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+            var random = new Random();
+            return new string(Enumerable.Repeat(chars, length)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
+        private static string GenerateRefreshToken()
+        {
+            using (var cryptoProvider = new RNGCryptoServiceProvider())
             {
-                var bytes = new byte[RandomStringLength];
-                rng.GetBytes(bytes);
-                return BitConverter.ToString(bytes).Replace("-", "").ToLower();
+                byte[] bytes = new byte[64];
+                cryptoProvider.GetBytes(bytes);
+
+                string secureRandomString = Convert.ToBase64String(bytes);
+
+                // Output example: Secure random string: OfGER+tSZIOSz314OlHk1aM+N8oNXDRHqTn3c5EVknYO5b5s0kqq40lJzoGj99ZXCvoFhkNG8KwQQvBPaR0FtQ==
+                return secureRandomString;
             }
         }
 

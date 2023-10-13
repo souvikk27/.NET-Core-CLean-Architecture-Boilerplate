@@ -77,6 +77,12 @@ namespace Ecommerce.API.Extensions
                 options.SignIn.RequireConfirmedAccount = true;
                 options.ClaimsIdentity.UserIdClaimType = "UserId";
             }).AddEntityFrameworkStores<DataContext>().AddDefaultTokenProviders();
+
+            services.Configure<IdentityOptions>(options =>{
+                options.Password.RequiredLength = 8;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireUppercase = true;
+            });
         }
 
         public static void ConfigureSqlContext(this IServiceCollection services, IConfiguration configuration) =>
