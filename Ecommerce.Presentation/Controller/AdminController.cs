@@ -36,5 +36,18 @@ namespace Ecommerce.Presentation.Controller
             return ApiResponseExtension.ToSuccessApiResult(response);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetUsers()
+        {
+            var users = await repository.GetAll();
+            return Ok(users);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetUserById(Guid id)
+        {
+            var user = await repository.GetById(id);
+            return ApiResponseExtension.ToSuccessApiResult(user);
+        }
     }
 }

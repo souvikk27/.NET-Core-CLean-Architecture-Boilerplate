@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
 using Ecommerce.LoggerService;
+using Microsoft.EntityFrameworkCore;
 #pragma warning disable SYSLIB0023
 
 namespace Ecommerce.Service
@@ -61,11 +62,23 @@ namespace Ecommerce.Service
             }
         }
 
+        public async Task<IEnumerable<ApplicationUser>> GetAll()
+        {
+            var users = await _userManager.Users.ToListAsync();
+            return users;
+        }
+
+        public async Task<ApplicationUser> GetById(Guid id)
+        {
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            return user;
+        }
 
 
 
 
 
+        
         private static string GenerateRandomString(int length)
         {
             const string chars = "abcdefghijklmnopqrstuvwxyz0123456789";
