@@ -14,6 +14,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 using Ecommerce.Presentation.Infrastructure.Filtering;
 using Ecommerce.Presentation.Infrastructure.Utils;
 using Ecommerce.Presentation.Infrastructure.Extensions;
+using Ecommerce.Service.Abstraction;
 
 namespace Ecommerce.Presentation.Controller
 {
@@ -21,9 +22,9 @@ namespace Ecommerce.Presentation.Controller
     [Route("api/v1/[controller]")]
     public class ProductController : ControllerBase
     {
-        public readonly ProductRepository repository;
+        public readonly IProductRepository repository;
 
-        public ProductController(ProductRepository repository)
+        public ProductController(IProductRepository repository)
         {
             this.repository = repository;
 

@@ -11,6 +11,12 @@ namespace Ecommerce.Domain.Entities
         public string? FirstName { get; set; }
 
         public string? LastName { get; set; }
+
+        public string? Client_Id { get; set; }
+
+        public string? Client_Secret { get; set; }
+
+        public string? Refresh_Token { get; set; }
     }
 
 }

@@ -39,6 +39,19 @@ namespace Ecommerce.Presentation.Extensions
             };
             return category;
         }
+
+        public static ApplicationUser MaptoUser(this UserDto dto)
+        {
+            var user = new ApplicationUser()
+            {
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                UserName = dto.UserName,
+                Email = dto.Email,
+                EmailConfirmed = true,
+            };
+            return user;
+        }
     }
 
     

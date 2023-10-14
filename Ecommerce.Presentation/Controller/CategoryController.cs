@@ -51,6 +51,7 @@ namespace Ecommerce.Presentation.Controller
 
 
         [HttpGet("{id}")]
+        [RateLimit(20, 60)]
         public IActionResult GetCategoryById(Guid id)
         {
             var category = repository.GetById(id);

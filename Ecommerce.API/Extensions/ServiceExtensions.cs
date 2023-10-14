@@ -18,7 +18,8 @@ namespace Ecommerce.API.Extensions
     {
         public static void ConfigureInfrastructure(this IServiceCollection services)
         {
-            services.AddTransient<ProductRepository>();
+            services.AddTransient<IProductRepository, ProductRepository>();
+            services.AddTransient<UserRepository>();
             services.AddScoped(typeof(IRepositoryOptions<>), typeof(RepositoryOptions<>));
             services.AddTransient<CategoryRepository>();
         }
@@ -76,6 +77,12 @@ namespace Ecommerce.API.Extensions
                 options.SignIn.RequireConfirmedAccount = true;
                 options.ClaimsIdentity.UserIdClaimType = "UserId";
             }).AddEntityFrameworkStores<DataContext>().AddDefaultTokenProviders();
+
+            services.Configure<IdentityOptions>(options =>{
+                options.Password.RequiredLength = 8;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireUppercase = true;
+            });
         }
 
         public static void ConfigureSqlContext(this IServiceCollection services, IConfiguration configuration) =>
