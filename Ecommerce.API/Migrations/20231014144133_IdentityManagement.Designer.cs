@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Ecommerce.API.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20230915114844_deletedproduct")]
-    partial class deletedproduct
+    [Migration("20231014144133_IdentityManagement")]
+    partial class IdentityManagement
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -33,6 +33,12 @@ namespace Ecommerce.API.Migrations
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
+
+                    b.Property<string>("Client_Id")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Client_Secret")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -73,6 +79,9 @@ namespace Ecommerce.API.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<string>("Refresh_Token")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");

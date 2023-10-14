@@ -42,7 +42,7 @@ namespace Ecommerce.Service
             try
             {
                 var existingUser = _userManager.FindByNameAsync(user.UserName);
-                if ( existingUser == null)
+                if ( existingUser.Result == null)
                 {
                     var result = await _userManager.CreateAsync(user, password);
                     if (result.Succeeded)
