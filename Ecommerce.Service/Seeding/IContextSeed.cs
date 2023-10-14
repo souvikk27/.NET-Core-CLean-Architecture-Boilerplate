@@ -10,5 +10,7 @@ namespace Ecommerce.Service.Seeding
     public interface IContextSeed
     {
         public void SeedProducts();
+
+        public void SeedCategories();
     }
 }
