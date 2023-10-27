@@ -11,6 +11,7 @@ namespace Ecommerce.API.Extensions
                 var services = scope.ServiceProvider;
                 var contextSeed = services.GetRequiredService<IContextSeed>();
                 contextSeed.SeedProducts();
+                contextSeed.SeedCategories();
             }
             return app;
         }
