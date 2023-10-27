@@ -7,6 +7,7 @@ using Ecommerce.LoggerService;
 using Ecommerce.Service;
 using Ecommerce.Service.Abstraction;
 using Ecommerce.Service.Context;
+using Ecommerce.Service.Contract.Generators;
 using Ecommerce.Service.Seeding;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -98,5 +99,8 @@ namespace Ecommerce.API.Extensions
 
         public static void ConfigureDbSeed(this IServiceCollection services) =>
             services.AddScoped<IContextSeed, ContextSeed>();
+
+        public static void ConfigureTokenGeneration(this IServiceCollection services) =>
+            services.AddSingleton<TokenGenerator>();
     }
 }

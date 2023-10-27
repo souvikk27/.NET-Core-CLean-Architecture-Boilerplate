@@ -47,7 +47,24 @@ namespace Ecommerce.Presentation.Controller
         public async Task<IActionResult> GetUserById(Guid id)
         {
             var user = await repository.GetById(id);
+            if(user == null)
+            {
+                return ApiResponseExtension.ToErrorApiResult(id, "User does not exist", "404");
+            }
             return ApiResponseExtension.ToSuccessApiResult(user);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteUser(Guid id)
+        {
+            var user = await repository.Delete(id);
+
+            if(user == null)
+            {
+                return ApiResponseExtension.ToErrorApiResult(id, "User does not exist", "404");
+            }
+
+            return ApiResponseExtension.ToSuccessApiResult(user, "User credentials removed");
         }
     }
 }

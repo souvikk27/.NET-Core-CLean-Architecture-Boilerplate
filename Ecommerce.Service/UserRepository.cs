@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using System.Security.Cryptography;
 using Ecommerce.LoggerService;
 using Microsoft.EntityFrameworkCore;
+using static Ecommerce.Service.Contract.Generators.TokenGenerator;
+using Ecommerce.Service.Contract.Generators;
 #pragma warning disable SYSLIB0023
 
 namespace Ecommerce.Service
@@ -30,8 +32,8 @@ namespace Ecommerce.Service
         {
             var clientIdLength = 10;
             var clientSecretLength = 15;
-            user.Client_Id = "app-api" + GenerateRandomString(clientIdLength);
-            user.Client_Secret = "app-api" + GenerateRandomString(clientSecretLength);
+            user.Client_Id = "app-api-" + GenerateRandomString(clientIdLength);
+            user.Client_Secret = "app-api-" + GenerateRandomString(clientSecretLength);
             user.Refresh_Token = GenerateRefreshToken();
 
             if (user.Client_Id.Length >= user.Client_Secret.Length)
@@ -41,7 +43,7 @@ namespace Ecommerce.Service
             }
             try
             {
-                var existingUser = _userManager.FindByNameAsync(user.UserName);
+                var existingUser = await _userManager.FindByNameAsync(user.UserName);
                 if ( existingUser == null)
                 {
                     var result = await _userManager.CreateAsync(user, password);
@@ -74,9 +76,29 @@ namespace Ecommerce.Service
             return user;
         }
 
+        public async Task<ApplicationUser> Delete(Guid id)
+        {
+            var user = await GetById(id);
+            var result = await _userManager.DeleteAsync(user);
 
+            if(user == null)
+            {
+                return new ApplicationUser();
+            }
 
+            if(!result.Succeeded)
+            {
+                throw new InvalidOperationException("Something went wrong please try again later");
+            }
 
+            return user;
+        }
+
+        public async Task<Token> GetTokenAsync(string clientId, string clientSecret, string refreshToken)
+        {
+            var generator = new TokenGenerator(clientId, clientSecret, refreshToken);
+            var token = generator.GenerateAccessToken();
+        }
 
         
         private static string GenerateRandomString(int length)
