@@ -29,7 +29,7 @@ namespace Ecommerce.Service.Contract.Generators
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, _clientId),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),  
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Exp, expirationTime)
             };
 
@@ -49,6 +49,11 @@ namespace Ecommerce.Service.Contract.Generators
                 refresh_token = _refreshToken,
                 expiration_time = expirationTime,
             };
+        }
+
+        public async Task<Token> GenerateAccessTokenAsync()
+        {
+            return await Task.Run(() => GenerateAccessToken());
         }
 
         public class Token

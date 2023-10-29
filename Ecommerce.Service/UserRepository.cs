@@ -97,7 +97,13 @@ namespace Ecommerce.Service
         public async Task<Token> GetTokenAsync(string clientId, string clientSecret, string refreshToken)
         {
             var generator = new TokenGenerator(clientId, clientSecret, refreshToken);
-            var token = generator.GenerateAccessToken();
+            var token = await generator.GenerateAccessTokenAsync();
+            return token;
+        }
+
+        public bool IsValid(string clientId, string clientSecret, string refreshToken)
+        {
+            return false;
         }
 
         
