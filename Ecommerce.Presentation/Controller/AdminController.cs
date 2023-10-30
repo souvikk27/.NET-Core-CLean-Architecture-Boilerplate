@@ -1,5 +1,6 @@
 ﻿using Ecommerce.Presentation.ActionFilters;
 using Ecommerce.Presentation.Extensions;
+using Ecommerce.Presentation.Infrastructure.Filtering;
 using Ecommerce.Service;
 using Ecommerce.Service.Extensions;
 using Ecommerce.Shared.DTO;
@@ -38,9 +39,9 @@ namespace Ecommerce.Presentation.Controller
 
         [HttpPost]
         [Route("token")]
-        public async Task<IActionResult> GetToken([FromQuery] string clientId, string clientSecret, string refreshToken)
+        public async Task<IActionResult> GetToken([FromQuery] AuthParameters auth)
         {
-            var token = await repository.GetTokenAsync(clientId, clientSecret, refreshToken);
+            var token = await repository.GetTokenAsync(auth.Client_ID, auth.Client_Secret, auth.Refresh_Token);
             return Ok(token);
         }
 
