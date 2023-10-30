@@ -14,6 +14,7 @@ using Ecommerce.Shared.DTO;
 using Microsoft.AspNetCore.Mvc;
 using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Ecommerce.Presentation.Controller
 {
@@ -29,6 +30,7 @@ namespace Ecommerce.Presentation.Controller
         
 
         [HttpGet]
+        [Authorize]
         [RateLimit(5,5)]
         public IActionResult GetAllCategories([FromQuery] CategoryParameters parameters)
         {
