@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.RateLimiting;
 namespace Ecommerce.Presentation.Controller
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     public class CategoryController : ControllerBase
     {
         private readonly CategoryRepository repository;

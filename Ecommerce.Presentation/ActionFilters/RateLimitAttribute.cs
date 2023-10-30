@@ -1,7 +1,12 @@
-﻿using Ecommerce.Domain.Errors;
+﻿using Ecommerce.Domain.Entities.Generic;
+using Ecommerce.Domain.Errors;
+using Ecommerce.Service.Extensions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Caching.Memory;
+using Newtonsoft.Json;
 using System;
 
 public class RateLimitAttribute : Attribute, IActionFilter
@@ -19,23 +24,21 @@ public class RateLimitAttribute : Attribute, IActionFilter
 
     public void OnActionExecuting(ActionExecutingContext context)
     {
+        var actionDescriptor = context.ActionDescriptor as ControllerActionDescriptor;
+        var apiOperation = actionDescriptor?.ActionName;
+        var apiEndpoint = context.HttpContext.Request.Path;
         var cache = context.HttpContext.RequestServices.GetService(typeof(IMemoryCache)) as IMemoryCache;
 
         if (cache.TryGetValue(_cacheKey, out int currentCount))
         {
-            ErrorDetails details = new ErrorDetails()
+            ResponseModel model = new ResponseModel
             {
-                SattusCode = 429,
-                Message = "Request quota has been exceeded."
+                ApiOperation = apiOperation,
+                ApiEndpoint = apiEndpoint.ToString()
             };
             if (currentCount >= _limit)
             {
-                context.Result = new ContentResult
-                {
-                    Content = details.ToString(),
-                    StatusCode = 429, 
-                    ContentType = "application/json"
-                };
+                context.Result = ApiResponseExtension.ToErrorApiResult(model, "Request Quota Exceeded", "429");
                 return;
             }
         }
@@ -51,4 +54,12 @@ public class RateLimitAttribute : Attribute, IActionFilter
     {
         // You can add post-execution logic here if needed
     }
+
+    private class ResponseModel
+    {
+        public string ApiOperation { get; set; }
+        public string ApiEndpoint { get; set; }
+        
+    }
+
 }

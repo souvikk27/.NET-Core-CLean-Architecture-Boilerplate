@@ -16,15 +16,15 @@ namespace Ecommerce.Domain.Entities.Generic
 
         public string Message { get; set; }
 
-        public T Data { get; set; }
+        public T Payload { get; set; }
 
-        public ApiResponseModel(ApiResponseStatusEnum status, string message, T data, string? statusCode = null, Guid? apiResponseId = null)
+        public ApiResponseModel(ApiResponseStatusEnum status, string message, T payload, string? statusCode = null, Guid? apiResponseId = null)
         {
             ApiResponseId = apiResponseId ?? Guid.NewGuid();
             Status = Enum.GetName(typeof(ApiResponseStatusEnum), status)?.ToLower();
             StatusCode = statusCode != null ? Convert.ToInt32(statusCode) : GetStatusCode(status);
             Message = message;
-            Data = data;
+            Payload = payload;
         }
 
         public int GetStatusCode(ApiResponseStatusEnum status)
