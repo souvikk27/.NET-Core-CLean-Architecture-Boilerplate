@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace Ecommerce.Presentation.Controller
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     public class AdminController : ControllerBase
     {
         private readonly UserRepository repository;
@@ -34,6 +34,14 @@ namespace Ecommerce.Presentation.Controller
                 return ApiResponseExtension.ToErrorApiResult(dto.UserName, "User Already Exists");
             }
             return ApiResponseExtension.ToSuccessApiResult(response);
+        }
+
+        [HttpPost]
+        [Route("token")]
+        public async Task<IActionResult> GetToken([FromQuery] string clientId, string clientSecret, string refreshToken)
+        {
+            var token = await repository.GetTokenAsync(clientId, clientSecret, refreshToken);
+            return Ok(token);
         }
 
         [HttpGet]

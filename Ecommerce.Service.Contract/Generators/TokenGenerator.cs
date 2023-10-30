@@ -1,4 +1,5 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -22,45 +23,48 @@ namespace Ecommerce.Service.Contract.Generators
             _refreshToken = refreshToken;
         }
 
-        public Token GenerateAccessToken()
+        public Token GenerateAccessToken(IConfiguration configuration)
         {
-            var expirationTime = DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds().ToString();
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-            var claims = new[]
+            var expirationTime = DateTime.UtcNow.AddMinutes(1);
+
+            var tokenDescriptor = new SecurityTokenDescriptor
             {
-                new Claim(JwtRegisteredClaimNames.Sub, _clientId),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Exp, expirationTime)
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim(JwtRegisteredClaimNames.Sub, _clientId),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    new Claim(JwtRegisteredClaimNames.Exp, new DateTimeOffset(expirationTime).ToUnixTimeSeconds().ToString())
+                }),
+                Expires = expirationTime,
+                SigningCredentials = credentials,
+                Issuer = configuration["JWT:ValidIssuer"],
+                Audience = configuration["JWT:ValidAudience"]
             };
 
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_clientSecret));
-
-            var header = new JwtHeader(new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256));
-
-            var payload = new JwtPayload(claims);
-
-            var jwt = new JwtSecurityToken(header, payload);
-
-            var token = new JwtSecurityTokenHandler().WriteToken(jwt);
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.CreateToken(tokenDescriptor);
 
             return new Token
             {
-                access_token = token,
+                access_token = tokenHandler.WriteToken(token),
                 refresh_token = _refreshToken,
                 expiration_time = expirationTime,
             };
         }
 
-        public async Task<Token> GenerateAccessTokenAsync()
+        public async Task<Token> GenerateAccessTokenAsync(IConfiguration configuration)
         {
-            return await Task.Run(() => GenerateAccessToken());
+            return await Task.Run(() => GenerateAccessToken(configuration));
         }
 
         public class Token
         {
             public string access_token { get; set; }
             public string refresh_token { get; set; }
-            public string expiration_time { get; set; }
+            public DateTime expiration_time { get; set; }
         }
     }
 }

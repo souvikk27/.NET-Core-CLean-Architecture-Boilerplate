@@ -10,6 +10,7 @@ using Ecommerce.LoggerService;
 using Microsoft.EntityFrameworkCore;
 using static Ecommerce.Service.Contract.Generators.TokenGenerator;
 using Ecommerce.Service.Contract.Generators;
+using Microsoft.Extensions.Configuration;
 #pragma warning disable SYSLIB0023
 
 namespace Ecommerce.Service
@@ -20,12 +21,14 @@ namespace Ecommerce.Service
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ILoggerManager logger;
         private const int RandomStringLength = 32;
+        private readonly IConfiguration configuration;
 
-        public UserRepository(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ILoggerManager logger)
+        public UserRepository(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ILoggerManager logger, IConfiguration configuration)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             this.logger = logger;
+            this.configuration = configuration;
         }
 
         public async Task<ApplicationUser> CreateUser(ApplicationUser user, string password)
@@ -97,7 +100,7 @@ namespace Ecommerce.Service
         public async Task<Token> GetTokenAsync(string clientId, string clientSecret, string refreshToken)
         {
             var generator = new TokenGenerator(clientId, clientSecret, refreshToken);
-            var token = await generator.GenerateAccessTokenAsync();
+            var token = await generator.GenerateAccessTokenAsync(configuration);
             return token;
         }
 

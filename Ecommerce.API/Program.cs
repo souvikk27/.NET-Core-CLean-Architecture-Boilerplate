@@ -22,6 +22,7 @@ builder.Services.AddScoped<ValidationFilterAttribute>();
 builder.Services.AddMemoryCache();
 builder.Services.ConfigureInfrastructure();
 builder.Services.ConfigureIdentity();
+builder.Services.ConfigureJwtAuthentication(configuration);
 builder.Services.ConfigureSqlContext(configuration);
 builder.Services.ConfigureEntityContext(configuration);
 builder.Services.ConfigureDbSeed();
