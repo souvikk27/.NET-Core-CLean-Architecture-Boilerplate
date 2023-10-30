@@ -26,6 +26,7 @@ namespace Ecommerce.Presentation.Extensions
                     {
                         NotFoundApiException => StatusCodes.Status404NotFound,
                         BadRequestApiException => StatusCodes.Status400BadRequest,
+                        UnauthorizedAccessException => StatusCodes.Status401Unauthorized,
                         MutedApiException => StatusCodes.Status500InternalServerError,
                         _ => StatusCodes.Status500InternalServerError
                     };
