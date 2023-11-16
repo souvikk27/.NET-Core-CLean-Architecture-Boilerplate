@@ -27,5 +27,32 @@ namespace Ecommerce.Presentation.Extensions
             };
             return product;
         }
+
+        public static Category MaptoCategory(this CategoryDto dto)
+        {
+            var category = new Category()
+            {
+                Id = dto.Id,
+                Name = dto.Name,
+                AddedOn = dto.AddedOn,
+                ModifiedOn = dto.ModifiedOn
+            };
+            return category;
+        }
+
+        public static ApplicationUser MaptoUser(this UserDto dto)
+        {
+            var user = new ApplicationUser()
+            {
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                UserName = dto.UserName,
+                Email = dto.Email,
+                EmailConfirmed = true,
+            };
+            return user;
+        }
     }
+
+    
 }

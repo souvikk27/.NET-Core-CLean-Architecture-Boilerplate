@@ -1,6 +1,8 @@
 using Ecommerce.API.Extensions;
+using Ecommerce.LoggerService;
 using Ecommerce.Presentation.ActionFilters;
-using Ecommerce.Service;
+using Ecommerce.Presentation.Extensions;
+using Microsoft.AspNetCore.Mvc.Formatters;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -9,16 +11,32 @@ var configuration = builder.Configuration;
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddControllers();
+builder.Services.AddControllers(config =>
+{
+    config.RespectBrowserAcceptHeader = true;
+    config.OutputFormatters.Add(new XmlSerializerOutputFormatter());
+    config.ReturnHttpNotAcceptable = true;
+}).AddApplicationPart(typeof(Ecommerce.Presentation.AssemblyReference).Assembly);
 builder.Services.AddScoped<ValidationFilterAttribute>();
+builder.Services.AddMemoryCache();
 builder.Services.ConfigureInfrastructure();
 builder.Services.ConfigureIdentity();
+builder.Services.ConfigureJwtAuthentication(configuration);
 builder.Services.ConfigureSqlContext(configuration);
 builder.Services.ConfigureEntityContext(configuration);
+builder.Services.ConfigureDbSeed();
 builder.Services.ConfigureSwaggerGen();
+builder.Services.ConfigureCors();
+builder.Services.ConfigureLogging();
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
 
 var app = builder.Build();
+var logger = app.Services.GetRequiredService<ILoggerManager>();
 
+app.ConfigureExceptionHandler(logger);
+app.ConfigureDatabaseSeed();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

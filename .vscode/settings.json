@@ -2,6 +2,10 @@
     "dotnet.defaultSolution": "Ecommerce.sln",
     "cSpell.ignoreWords": [
         "Ecommerce",
+        "Mapto",
+        "SYSLIB",
+        "Sattus",
+        "apimodel",
         "appsettings",
         "rtval"
     ],
