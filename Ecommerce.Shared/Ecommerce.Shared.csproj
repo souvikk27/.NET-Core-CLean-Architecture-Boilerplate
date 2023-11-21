@@ -11,6 +11,9 @@
     <NoWarn>1701;1702;8618;</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <Folder Include="DTO\Categories\" />
+    <Folder Include="DTO\Products\" />
+    <Folder Include="DTO\Users\" />
     <Folder Include="ValidationFilters\" />
   </ItemGroup>
   <ItemGroup>

@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Authorization;
+using Mapster;
 
 namespace Ecommerce.Presentation.Controller
 {
@@ -66,7 +67,7 @@ namespace Ecommerce.Presentation.Controller
         [ServiceFilter(typeof(ValidationFilterAttribute))]
         public IActionResult AddCategory([FromBody] CategoryDto dto)
         {
-            var category = dto.MaptoCategory();
+            var category = dto.Adapt<Category>();
             repository.Add(category);
             repository.Save();
             return ApiResponseExtension.ToSuccessApiResult(category);
@@ -77,7 +78,7 @@ namespace Ecommerce.Presentation.Controller
         [ServiceFilter(typeof(ValidationFilterAttribute))]
         public IActionResult UpdateCategory([FromBody] CategoryDto dto)
         {
-            var category = dto.MaptoCategory();
+            var category = dto.Adapt<Category>();
             category.ModifiedOn = DateTime.Now;
             repository.Update(category);
             repository.Save();

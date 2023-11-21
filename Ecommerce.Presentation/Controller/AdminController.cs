@@ -4,6 +4,8 @@ using Ecommerce.Presentation.Infrastructure.Filtering;
 using Ecommerce.Service;
 using Ecommerce.Service.Extensions;
 using Ecommerce.Shared.DTO;
+using Ecommerce.Domain.Entities;
+using Mapster;
 using Microsoft.AspNetCore.Mvc;
 
 
@@ -24,7 +26,7 @@ namespace Ecommerce.Presentation.Controller
         [ServiceFilter(typeof(ValidationFilterAttribute))]
         public async Task<IActionResult> AddUser(UserDto dto)
         {
-            var user = dto.MaptoUser();
+            var user = dto.Adapt<ApplicationUser>();
             var response = await repository.CreateUser(user, dto.Password);
             if(response == null)
             {

@@ -15,6 +15,7 @@ using Ecommerce.Presentation.Infrastructure.Filtering;
 using Ecommerce.Presentation.Infrastructure.Utils;
 using Ecommerce.Presentation.Infrastructure.Extensions;
 using Ecommerce.Service.Abstraction;
+using Mapster;
 
 namespace Ecommerce.Presentation.Controller
 {
@@ -66,7 +67,7 @@ namespace Ecommerce.Presentation.Controller
         [ServiceFilter(typeof(ValidationFilterAttribute))]
         public IActionResult AddProduct([FromBody] ProductDto dto)
         {
-            var product = dto.MaptoProduct();
+            var product = dto.Adapt<Product>();
             var rtval = repository.Add(product);
             repository.Save();
             return ApiResponseExtension.ToSuccessApiResult(rtval);
@@ -77,7 +78,7 @@ namespace Ecommerce.Presentation.Controller
         [ServiceFilter(typeof(ValidationFilterAttribute))]
         public IActionResult UpdateProduct([FromBody] ProductDto dto)
         {
-            var product = dto.MaptoProduct();
+            var product = dto.Adapt<Product>();
             var rtval = repository.Update(product);
             repository.Save();
             return ApiResponseExtension.ToSuccessApiResult(rtval, "Product updated successfully", "204");

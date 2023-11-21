@@ -2,6 +2,7 @@ using Ecommerce.API.Extensions;
 using Ecommerce.LoggerService;
 using Ecommerce.Presentation.ActionFilters;
 using Ecommerce.Presentation.Extensions;
+using Ecommerce.Presentation.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Mvc.Formatters;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +20,7 @@ builder.Services.AddControllers(config =>
 }).AddApplicationPart(typeof(Ecommerce.Presentation.AssemblyReference).Assembly);
 builder.Services.AddScoped<ValidationFilterAttribute>();
 builder.Services.AddMemoryCache();
+builder.Services.AddMappingConfig();
 builder.Services.ConfigureInfrastructure();
 builder.Services.ConfigureIdentity();
 builder.Services.ConfigureJwtAuthentication(configuration);
