@@ -1,4 +1,4 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -18,9 +18,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ecommerce.Presentation.Infr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ecommerce.Service.Contract", "Ecommerce.Service.Contract\Ecommerce.Service.Contract.csproj", "{656B5B59-6D5C-4C25-8D2C-61C7FDB4B5F1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ecommerce.API.Auth", "Ecommerce.API.Auth\Ecommerce.API.Auth.csproj", "{76A0CF2D-862D-478B-B626-90A93E137E6A}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ecommerce.Unit.Test", "Ecommerce.Unit.Test\Ecommerce.Unit.Test.csproj", "{5B4AB40A-40D5-4830-AD33-EABCE781B131}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ecommerce.Service.Auth", "Ecommerce.Service.Auth\Ecommerce.Service.Auth.csproj", "{1A9775F7-E305-4C79-82C4-5102D5B6E3CB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -68,6 +68,10 @@ Global
 		{5B4AB40A-40D5-4830-AD33-EABCE781B131}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5B4AB40A-40D5-4830-AD33-EABCE781B131}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5B4AB40A-40D5-4830-AD33-EABCE781B131}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A9775F7-E305-4C79-82C4-5102D5B6E3CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A9775F7-E305-4C79-82C4-5102D5B6E3CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A9775F7-E305-4C79-82C4-5102D5B6E3CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A9775F7-E305-4C79-82C4-5102D5B6E3CB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

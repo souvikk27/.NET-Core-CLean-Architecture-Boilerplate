@@ -2,6 +2,7 @@
     "dotnet.defaultSolution": "Ecommerce.sln",
     "cSpell.ignoreWords": [
         "Ecommerce",
+        "Iddict",
         "Mapto",
         "SYSLIB",
         "Sattus",

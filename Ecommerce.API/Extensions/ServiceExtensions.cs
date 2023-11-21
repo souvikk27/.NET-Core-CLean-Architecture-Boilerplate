@@ -13,6 +13,7 @@ using Ecommerce.Service.Seeding;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -60,7 +61,38 @@ namespace Ecommerce.API.Extensions
                         new string[]{}
                     }
                 });
-                c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First()); //This line
+                c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First()); //This line is needed because of the following code in the assembly
+                c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.OAuth2,
+                    Flows = new OpenApiOAuthFlows
+                    {
+                        AuthorizationCode = new OpenApiOAuthFlow
+                        {
+                            AuthorizationUrl = new Uri("/connect/authorize", UriKind.Relative),
+                            TokenUrl = new Uri("/connect/token", UriKind.Relative),
+                            Scopes = new Dictionary<string, string>
+                            {
+                                {"openid", "OpenID"},
+                                {"profile", "Profile"},
+                            }
+                        }
+                    }
+                });
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "openid"
+                            }
+                        },
+                        new string[] {}
+                    }
+                });
             });
         }
 
@@ -89,6 +121,28 @@ namespace Ecommerce.API.Extensions
         }
 
 
+        public static void ConfigureOpenIddict(this IServiceCollection services)
+        {
+            services.AddOpenIddict()
+                .AddCore(options =>
+                {
+                    options.UseEntityFrameworkCore().UseDbContext<DataContext>();
+                })
+                .AddServer(options =>
+                {
+                    //enable client_credentials grant_tupe support on server level
+                    options.AllowClientCredentialsFlow();
+                    //specify token endpoint uri
+                    options.SetTokenEndpointUris("token");
+                    //secret registration
+                    options.AddDevelopmentEncryptionCertificate()
+                    .AddDevelopmentSigningCertificate();
+                    options.DisableAccessTokenEncryption();
+                    //the asp request handlers configuration itself
+                    options.UseAspNetCore().EnableTokenEndpointPassthrough();
+                });
+
+        }
 
         public static void ConfigureCors(this IServiceCollection services) =>
             services.AddCors(options =>
@@ -108,7 +162,8 @@ namespace Ecommerce.API.Extensions
                 options.ClaimsIdentity.UserIdClaimType = "UserId";
             }).AddEntityFrameworkStores<DataContext>().AddDefaultTokenProviders();
 
-            services.Configure<IdentityOptions>(options =>{
+            services.Configure<IdentityOptions>(options =>
+            {
                 options.Password.RequiredLength = 8;
                 options.Password.RequireLowercase = true;
                 options.Password.RequireUppercase = true;
@@ -123,7 +178,7 @@ namespace Ecommerce.API.Extensions
             services.AddDbContext<EntityContext>(option =>
                 option.UseSqlServer(configuration.GetConnectionString("SqlConnection")));
 
-        public static void ConfigureLogging(this IServiceCollection services) => 
+        public static void ConfigureLogging(this IServiceCollection services) =>
             services.AddSingleton<ILoggerManager, LoggerManager>();
 
         public static void ConfigureDbSeed(this IServiceCollection services) =>
