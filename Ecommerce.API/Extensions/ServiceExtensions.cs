@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Ecommerce.Domain.Entities;
 using Ecommerce.LoggerService;
+using Ecommerce.Presentation.Infrastructure.Services;
 using Ecommerce.Service;
 using Ecommerce.Service.Abstraction;
 using Ecommerce.Service.Context;
@@ -126,19 +127,24 @@ namespace Ecommerce.API.Extensions
             services.AddOpenIddict()
                 .AddCore(options =>
                 {
-                    options.UseEntityFrameworkCore().UseDbContext<DataContext>();
+                    options.UseEntityFrameworkCore().UseDbContext<ApplicationDbContext>();
                 })
                 .AddServer(options =>
                 {
-                    //enable client_credentials grant_tupe support on server level
                     options.AllowClientCredentialsFlow();
-                    //specify token endpoint uri
-                    options.SetTokenEndpointUris("token");
-                    //secret registration
+
+                    options.SetTokenEndpointUris("/connect/token");
+
                     options.AddDevelopmentEncryptionCertificate()
                     .AddDevelopmentSigningCertificate();
                     options.DisableAccessTokenEncryption();
-                    //the asp request handlers configuration itself
+                    
+                    options
+                        .AddEphemeralEncryptionKey()
+                        .AddEphemeralSigningKey();
+                    
+                    options.RegisterScopes("api");
+
                     options.UseAspNetCore().EnableTokenEndpointPassthrough();
                 });
 
@@ -178,6 +184,16 @@ namespace Ecommerce.API.Extensions
             services.AddDbContext<EntityContext>(option =>
                 option.UseSqlServer(configuration.GetConnectionString("SqlConnection")));
 
+        public static void ConfigureApplicationContext(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddDbContext<ApplicationDbContext>(options =>
+            {
+                options.UseSqlServer(configuration.GetConnectionString("SqlConnection"));
+                options.UseOpenIddict();
+            });
+        }
+        
+        
         public static void ConfigureLogging(this IServiceCollection services) =>
             services.AddSingleton<ILoggerManager, LoggerManager>();
 
@@ -186,5 +202,10 @@ namespace Ecommerce.API.Extensions
 
         public static void ConfigureTokenGeneration(this IServiceCollection services) =>
             services.AddSingleton<TokenGenerator>();
+
+        public static void ConfigureHostedService(this IServiceCollection services)
+        {
+            services.AddHostedService<AuthService>();
+        }
     }
 }

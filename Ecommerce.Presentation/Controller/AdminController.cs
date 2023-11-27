@@ -1,12 +1,15 @@
-﻿using Ecommerce.Presentation.ActionFilters;
-using Ecommerce.Presentation.Extensions;
+﻿using System.Security.Claims;
+using Ecommerce.Presentation.ActionFilters;
 using Ecommerce.Presentation.Infrastructure.Filtering;
 using Ecommerce.Service;
 using Ecommerce.Service.Extensions;
 using Ecommerce.Shared.DTO;
 using Ecommerce.Domain.Entities;
 using Mapster;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
+using OpenIddict.Abstractions;
+using OpenIddict.Server.AspNetCore;
 
 
 namespace Ecommerce.Presentation.Controller
@@ -35,13 +38,41 @@ namespace Ecommerce.Presentation.Controller
             return ApiResponseExtension.ToSuccessApiResult(response);
         }
 
-        [HttpPost]
-        [Route("token")]
-        public async Task<IActionResult> GetToken([FromQuery] AuthParameters auth)
+        [HttpPost("~/connect/token")]
+        [Produces("application/json")]
+        public IActionResult Exchange()
         {
-            var token = await repository.GetTokenAsync(auth.Client_ID, auth.Client_Secret, auth.Refresh_Token);
-            return Ok(token);
+            var request = HttpContext.GetOpenIddictServerRequest() ??
+                          throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
+            ClaimsPrincipal claimsPrincipal;
+
+            if (request.IsClientCredentialsGrantType())
+            {
+                var identity = new ClaimsIdentity(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+                identity.AddClaim(OpenIddictConstants.Claims.Subject, request.ClientId ?? throw new InvalidOperationException());
+
+                // Add some claim, don't forget to add destination otherwise it won't be added to the access token.
+                identity.AddClaim("some-claim", "some-value", OpenIddictConstants.Destinations.AccessToken);
+
+                claimsPrincipal = new ClaimsPrincipal(identity);
+
+                claimsPrincipal.SetScopes(request.GetScopes());
+            }
+            else
+            {
+                throw new InvalidOperationException("The specified grant type is not supported.");
+            }
+            return SignIn(claimsPrincipal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         }
+        
+        
+        // [HttpPost]
+        // [Route("token")]
+        // public async Task<IActionResult> GetToken([FromQuery] AuthParameters auth)
+        // {
+        //     var token = await repository.GetTokenAsync(auth.Client_ID, auth.Client_Secret, auth.Refresh_Token);
+        //     return Ok(token);
+        // }
 
         [HttpGet]
         public async Task<IActionResult> GetUsers()

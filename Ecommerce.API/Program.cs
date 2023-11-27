@@ -27,6 +27,8 @@ builder.Services.ConfigureIdentity();
 builder.Services.ConfigureJwtAuthentication(configuration);
 builder.Services.ConfigureSqlContext(configuration);
 builder.Services.ConfigureEntityContext(configuration);
+builder.Services.ConfigureApplicationContext(configuration);
+builder.Services.ConfigureHostedService();
 builder.Services.ConfigureDbSeed();
 builder.Services.ConfigureSwaggerGen();
 builder.Services.ConfigureCors();

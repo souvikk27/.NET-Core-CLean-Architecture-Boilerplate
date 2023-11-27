@@ -37,4 +37,22 @@ namespace Ecommerce.API.ContextFactory
             return new EntityContext(builder.Options);
         }
     }
+
+    public class ApplicationDbContextFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
+    {
+        public ApplicationDbContext CreateDbContext(string[] args)
+        {
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .Build();
+            var builder = new DbContextOptionsBuilder<ApplicationDbContext>();
+            builder.UseSqlServer(configuration.GetConnectionString("SqlConnection"),
+                b => b.MigrationsAssembly("Ecommerce.API"));
+            builder.UseOpenIddict();
+
+            return new ApplicationDbContext(builder.Options);
+        }
+    } 
+    
 }
