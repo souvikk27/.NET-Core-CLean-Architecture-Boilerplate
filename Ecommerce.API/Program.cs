@@ -2,7 +2,6 @@ using Ecommerce.API.Extensions;
 using Ecommerce.LoggerService;
 using Ecommerce.Presentation.ActionFilters;
 using Ecommerce.Presentation.Extensions;
-using Ecommerce.Service;
 using Microsoft.AspNetCore.Mvc.Formatters;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -5,11 +5,7 @@ using Ecommerce.Service;
 using Ecommerce.Service.Extensions;
 using Ecommerce.Shared.DTO;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Ecommerce.Presentation.Controller
 {
