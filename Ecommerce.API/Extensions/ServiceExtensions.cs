@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Ecommerce.Domain.Entities;
 using Ecommerce.LoggerService;
 using Ecommerce.Service;
@@ -15,6 +11,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using OpenIddict.Abstractions;
 
 namespace Ecommerce.API.Extensions
 {
@@ -64,6 +61,8 @@ namespace Ecommerce.API.Extensions
             });
         }
 
+
+
         public static void ConfigureJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddAuthentication(options =>
@@ -100,6 +99,8 @@ namespace Ecommerce.API.Extensions
             });
 
 
+
+
         public static void ConfigureIdentity(this IServiceCollection services)
         {
             services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -115,21 +116,75 @@ namespace Ecommerce.API.Extensions
             });
         }
 
+
+
         public static void ConfigureSqlContext(this IServiceCollection services, IConfiguration configuration) =>
             services.AddDbContext<DataContext>(option =>
-                option.UseSqlServer(configuration.GetConnectionString("SqlConnection")));
+            {
+                option.UseSqlServer(configuration.GetConnectionString("SqlConnection"));
+                option.UseOpenIddict();
+            });
+
+
+
 
         public static void ConfigureEntityContext(this IServiceCollection services, IConfiguration configuration) =>
             services.AddDbContext<EntityContext>(option =>
                 option.UseSqlServer(configuration.GetConnectionString("SqlConnection")));
 
+
+
+
         public static void ConfigureLogging(this IServiceCollection services) => 
             services.AddSingleton<ILoggerManager, LoggerManager>();
+
+
+
+
 
         public static void ConfigureDbSeed(this IServiceCollection services) =>
             services.AddScoped<IContextSeed, ContextSeed>();
 
+
+
+
+
         public static void ConfigureTokenGeneration(this IServiceCollection services) =>
             services.AddSingleton<TokenGenerator>();
+
+
+
+        public static void COnfigureOpeniddict(this IServiceCollection services) =>
+            services.AddOpenIddict()
+            .AddCore(options =>
+            {
+                options.UseEntityFrameworkCore().UseDbContext<DataContext>(); // Replace with your DbContext>
+            })
+            .AddServer(options =>
+            {
+                options.SetAuthorizationEndpointUris("/connect/authorize")
+                       .SetTokenEndpointUris("/connect/token");
+
+                options.AllowAuthorizationCodeFlow()
+                       .AllowPasswordFlow()
+                       .AllowRefreshTokenFlow();
+
+                options.AddEphemeralEncryptionKey()
+                       .AddEphemeralSigningKey()
+                       .DisableAccessTokenEncryption();
+
+                options.RegisterScopes(OpenIddictConstants.Scopes.Email,
+                                       OpenIddictConstants.Scopes.Profile,
+                                       OpenIddictConstants.Scopes.Roles);
+
+                options.AddDevelopmentEncryptionCertificate()
+                       .AddDevelopmentSigningCertificate();
+
+                options.UseAspNetCore()
+                       .EnableAuthorizationEndpointPassthrough()
+                       .EnableTokenEndpointPassthrough();
+            });
+
+
     }
 }

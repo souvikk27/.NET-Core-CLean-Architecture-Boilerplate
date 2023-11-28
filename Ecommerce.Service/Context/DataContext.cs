@@ -6,6 +6,7 @@ using Ecommerce.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using OpenIddict.EntityFrameworkCore.Models;
 
 namespace Ecommerce.Service.Context
 {
@@ -19,7 +20,11 @@ namespace Ecommerce.Service.Context
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+
             builder.HasDefaultSchema("Identity");
+
+
             builder.Entity<ApplicationUser>(entity =>
             {
                 entity.ToTable(name: "User");
@@ -29,6 +34,7 @@ namespace Ecommerce.Service.Context
             {
                 entity.ToTable(name: "Role");
             });
+
             builder.Entity<IdentityUserRole<string>>(entity =>
             {
                 entity.ToTable("UserRoles");
@@ -54,6 +60,15 @@ namespace Ecommerce.Service.Context
             {
                 entity.ToTable("UserTokens");
             });
+
+            builder.Entity<OpenIddictEntityFrameworkCoreToken<string>>(entity => entity.ToTable("OpenIddictTokens")); 
+
+            builder.Entity<OpenIddictEntityFrameworkCoreApplication<string>>(entity => entity.ToTable("OpenIddictApplications"));
+
+            builder.Entity<OpenIddictEntityFrameworkCoreAuthorization<string>>(entity => entity.ToTable("OpenIddictAuthorizations"));
+
+            builder.Entity<OpenIddictEntityFrameworkCoreScope<string>>(entity => entity.ToTable("OpenIddictScopes"));
+
         }
     }
 }
