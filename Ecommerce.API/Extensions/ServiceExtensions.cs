@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Ecommerce.Domain.Entities;
 using Ecommerce.LoggerService;
 using Ecommerce.Presentation.Infrastructure.Services;
@@ -17,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using OpenIddict.Abstractions;
 
 namespace Ecommerce.API.Extensions
 {
@@ -97,6 +94,8 @@ namespace Ecommerce.API.Extensions
             });
         }
 
+
+
         public static void ConfigureJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddAuthentication(options =>
@@ -160,6 +159,8 @@ namespace Ecommerce.API.Extensions
             });
 
 
+
+
         public static void ConfigureIdentity(this IServiceCollection services)
         {
             services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -176,36 +177,37 @@ namespace Ecommerce.API.Extensions
             });
         }
 
+
+
         public static void ConfigureSqlContext(this IServiceCollection services, IConfiguration configuration) =>
             services.AddDbContext<DataContext>(option =>
-                option.UseSqlServer(configuration.GetConnectionString("SqlConnection")));
+            {
+                option.UseSqlServer(configuration.GetConnectionString("SqlConnection"));
+                option.UseOpenIddict();
+            });
+
+
+
 
         public static void ConfigureEntityContext(this IServiceCollection services, IConfiguration configuration) =>
             services.AddDbContext<EntityContext>(option =>
                 option.UseSqlServer(configuration.GetConnectionString("SqlConnection")));
 
-        public static void ConfigureApplicationContext(this IServiceCollection services, IConfiguration configuration)
-        {
-            services.AddDbContext<ApplicationDbContext>(options =>
-            {
-                options.UseSqlServer(configuration.GetConnectionString("SqlConnection"));
-                options.UseOpenIddict();
-            });
-        }
-        
-        
-        public static void ConfigureLogging(this IServiceCollection services) =>
+        public static void ConfigureLogging(this IServiceCollection services) => 
             services.AddSingleton<ILoggerManager, LoggerManager>();
+
+
+
+
 
         public static void ConfigureDbSeed(this IServiceCollection services) =>
             services.AddScoped<IContextSeed, ContextSeed>();
 
+
+
+
+
         public static void ConfigureTokenGeneration(this IServiceCollection services) =>
             services.AddSingleton<TokenGenerator>();
-
-        public static void ConfigureHostedService(this IServiceCollection services)
-        {
-            services.AddHostedService<AuthService>();
-        }
     }
 }
