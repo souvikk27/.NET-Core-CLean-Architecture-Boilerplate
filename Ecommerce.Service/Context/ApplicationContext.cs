@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OpenIddict.EntityFrameworkCore.Models;
+using System.Reflection.Emit;
 
 namespace Ecommerce.Service.Context;
 
@@ -14,9 +15,6 @@ public class ApplicationContext : EntityContext
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-
-
-        builder.HasDefaultSchema("Identity");
 
 
         builder.Entity<ApplicationUser>(entity =>
@@ -54,6 +52,12 @@ public class ApplicationContext : EntityContext
         {
             entity.ToTable("UserTokens");
         });
+
+        builder.Entity<OAuthClient>()
+           .HasOne(o => o.User)
+           .WithMany(u => (IEnumerable<OAuthClient>)u.OAuthClient)
+           .HasForeignKey(o => o.UserId)
+           .IsRequired();
     }
     
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using Ecommerce.Presentation.Infrastructure.Filtering;
+using Ecommerce.Presentation.Infrastructure.Services.Abstraction;
 
 
 
@@ -11,34 +12,30 @@ namespace Ecommerce.Presentation.Controller
     {
         private readonly UserRepository repository;
         private readonly IOpenIddictApplicationManager _applicationManager;
-        
-        public AdminController(UserRepository repository, IOpenIddictApplicationManager applicationManager)
+        private readonly IClientCredentialService _clientCredentialService;
+
+        public AdminController(UserRepository repository, IOpenIddictApplicationManager applicationManager
+            , IClientCredentialService clientCredentialService)
         {
             this.repository = repository;
             _applicationManager = applicationManager;
+            _clientCredentialService = clientCredentialService;
         }
-        
+
         [HttpPost]
         [Route("register")]
         [ServiceFilter(typeof(ValidationFilterAttribute))]
-        public async Task<IActionResult> AddUser([FromBody]UserDto dto)
+        public async Task<IActionResult> AddUser([FromBody] UserDto dto)
         {
             var user = dto.Adapt<ApplicationUser>();
             var cancellationToken = new CancellationTokenSource().Token;
             if (user == null) return ApiResponseExtension.ToErrorApiResult(dto, "User parameters required");
-            var response = await repository.CreateUser(user, dto.Password);
+
+            var invokeClient = await _clientCredentialService.InvokeCredentialsAsync();
+
+            var response = await repository.CreateUser(user, dto.Password, invokeClient);
             return ApiResponseExtension.ToSuccessApiResult(user);
         }
-        
-        
-        [HttpPost]
-        [Route("token")]
-        public async Task<IActionResult> GetToken([FromBody] AuthParameters auth)
-        {
-            var token = await repository.GetTokenAsync(auth.client_ID, auth.client_Secret);
-            return Ok(token);
-        }
-
         
 
         [HttpGet]

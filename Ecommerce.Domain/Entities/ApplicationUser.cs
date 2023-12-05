@@ -12,11 +12,10 @@ namespace Ecommerce.Domain.Entities
 
         public string? LastName { get; set; }
 
-        public string? Client_Id { get; set; }
+        public Guid OAuthClientId { get; set; }
 
-        public string? Client_Secret { get; set; }
-
-        public string? Refresh_Token { get; set; }
+        // Navigation property
+        public OAuthClient OAuthClient { get; set; }
     }
 
 }

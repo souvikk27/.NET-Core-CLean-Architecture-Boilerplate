@@ -1,15 +1,9 @@
 ﻿using Ecommerce.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
-using System.Security.Cryptography;
 using Ecommerce.LoggerService;
 using Microsoft.EntityFrameworkCore;
-using static Ecommerce.Service.Contract.Generators.TokenGenerator;
-using Ecommerce.Service.Contract.Generators;
-using Microsoft.Extensions.Configuration;
-using OpenIddict.Abstractions;
-using Microsoft.Extensions.Options;
-using OpenIddict.Server;
-using Microsoft.IdentityModel.Tokens;
+using Ecommerce.Service.Context;
+
 
 #pragma warning disable SYSLIB0023
 
@@ -20,30 +14,30 @@ namespace Ecommerce.Service
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ILoggerManager logger;
-        private const int RandomStringLength = 32;
-        private readonly IConfiguration configuration;
-        IOptionsMonitor<OpenIddictServerOptions> _oidcOptions;
+        private readonly ApplicationContext _context;
 
         public UserRepository(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, 
-            ILoggerManager logger, IConfiguration configuration, IOptionsMonitor<OpenIddictServerOptions> oidcOptions)
+            ILoggerManager logger, ApplicationContext context)
         {
             _userManager = userManager;
             _roleManager = roleManager;
+            _context = context;
             this.logger = logger;
-            this.configuration = configuration;
-            _oidcOptions = oidcOptions;
         }
 
-        public async Task<ApplicationUser> CreateUser(ApplicationUser user, string password)
+        public async Task<ApplicationUser> CreateUser(ApplicationUser user, string password, OAuthClient client)
         {
             try
             {
                 var existingUser = await _userManager.FindByNameAsync(user.UserName);
                 if ( existingUser == null)
                 {
+                    user.OAuthClient = client;
                     var result = await _userManager.CreateAsync(user, password);
                     if (result.Succeeded)
                     {
+                        await _context.OAuthClient.AddAsync(client);
+                        await _context.SaveChangesAsync();
                         return user;
                     }
                     else
@@ -66,42 +60,29 @@ namespace Ecommerce.Service
             return users;
         }
 
-
-
         public async Task<ApplicationUser> GetById(Guid id)
         {
             var user = await _userManager.FindByIdAsync(id.ToString());
             return user;
         }
 
-
-
         public async Task<ApplicationUser> Delete(Guid id)
         {
             var user = await GetById(id);
             var result = await _userManager.DeleteAsync(user);
 
-            if(user == null)
+            if (user == null)
             {
                 return new ApplicationUser();
             }
 
-            if(!result.Succeeded)
+            if (!result.Succeeded)
             {
                 throw new InvalidOperationException("Something went wrong please try again later");
             }
 
             return user;
         }
-
-
-        public async Task<Token> GetTokenAsync(string clientId, string clientSecret)
-        {
-            var generator = new TokenGenerator(clientId, clientSecret);
-            var token = await generator.GenerateAccessTokenAsync(configuration);
-            return token;
-        }
-
 
         public bool IsValid(string clientId, string clientSecret, string refreshToken)
         {

@@ -1,5 +1,7 @@
 using Ecommerce.Domain.Entities;
 using Ecommerce.LoggerService;
+using Ecommerce.Presentation.Infrastructure.Services;
+using Ecommerce.Presentation.Infrastructure.Services.Abstraction;
 using Ecommerce.Service;
 using Ecommerce.Service.Abstraction;
 using Ecommerce.Service.Context;
@@ -8,6 +10,7 @@ using Ecommerce.Service.Seeding;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Quartz;
 
 
 namespace Ecommerce.API.Extensions
@@ -96,6 +99,7 @@ namespace Ecommerce.API.Extensions
                 {
                     options.UseEntityFrameworkCore()
                         .UseDbContext<ApplicationContext>();
+                    options.UseQuartz();
                 })
                 .AddServer(options =>
                 {
@@ -178,5 +182,22 @@ namespace Ecommerce.API.Extensions
 
         public static void ConfigureTokenGeneration(this IServiceCollection services) =>
             services.AddSingleton<TokenGenerator>();
+
+        public static void ConfigureHostedservice(this IServiceCollection services) => services.AddHostedService<Worker>();
+
+        public static void ConfigureQuartz(this IServiceCollection services)
+        {
+            services.AddQuartz(options =>
+            {
+                options.UseMicrosoftDependencyInjectionJobFactory();
+                options.UseSimpleTypeLoader();
+                options.UseInMemoryStore();
+            });
+
+            services.AddQuartzHostedService(options => options.WaitForJobsToComplete = true);
+        }
+
+        public static void InvokeOauthClient(this IServiceCollection services) => 
+            services.AddTransient<IClientCredentialService, ClientCredentialService>();
     }
 }
