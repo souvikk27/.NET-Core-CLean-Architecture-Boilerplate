@@ -17,7 +17,6 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Ecommerce.Infrastructure.Auth\Ecommerce.Infrastructure.Auth.csproj" />
     <ProjectReference Include="..\Ecommerce.Presentation.Infrastructure\Ecommerce.Presentation.Infrastructure.csproj" />
     <ProjectReference Include="..\Ecommerce.Shared\Ecommerce.Shared.csproj" />
   </ItemGroup>

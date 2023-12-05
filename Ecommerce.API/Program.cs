@@ -21,14 +21,12 @@ builder.Services.AddControllers(config =>
 builder.Services.AddScoped<ValidationFilterAttribute>();
 builder.Services.AddMemoryCache();
 builder.Services.AddMappingConfig();
-builder.Services.ConfigureInfrastructure();
 builder.Services.ConfigureOpenIddict();
+builder.Services.ConfigureInfrastructure();
 builder.Services.ConfigureIdentity();
-builder.Services.ConfigureJwtAuthentication(configuration);
 builder.Services.ConfigureSqlContext(configuration);
 builder.Services.ConfigureEntityContext(configuration);
 builder.Services.ConfigureApplicationContext(configuration);
-builder.Services.ConfigureHostedService();
 builder.Services.ConfigureDbSeed();
 builder.Services.ConfigureSwaggerGen();
 builder.Services.ConfigureCors();
@@ -53,6 +51,7 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
 
 app.MapControllers();
 

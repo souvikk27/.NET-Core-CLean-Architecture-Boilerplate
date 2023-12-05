@@ -1,19 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Ecommerce.Domain.Entities;
-using Ecommerce.Presentation.ActionFilters;
-using Ecommerce.Presentation.Extensions;
 using Ecommerce.Presentation.Infrastructure.Extensions;
 using Ecommerce.Presentation.Infrastructure.Filtering;
 using Ecommerce.Presentation.Infrastructure.Utils;
-using Ecommerce.Service;
-using Ecommerce.Service.Extensions;
-using Ecommerce.Shared.DTO;
-using Microsoft.AspNetCore.Mvc;
-using AspNetCoreRateLimit;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Authorization;
 using Mapster;
 
@@ -60,8 +47,7 @@ namespace Ecommerce.Presentation.Controller
             var category = repository.GetById(id);
             return Ok(category);
         }
-
-
+        
 
         [HttpPost]
         [ServiceFilter(typeof(ValidationFilterAttribute))]
@@ -84,7 +70,6 @@ namespace Ecommerce.Presentation.Controller
             repository.Save();
             return ApiResponseExtension.ToSuccessApiResult(category, "Category updated successfully", "204");
         }
-
 
         [HttpDelete]
         public IActionResult DeleteCategory(Guid id)

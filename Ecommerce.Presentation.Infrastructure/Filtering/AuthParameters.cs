@@ -17,7 +17,5 @@ namespace Ecommerce.Presentation.Infrastructure.Filtering
 
         [Required(ErrorMessage = "Client Secret is Required")]
         public string client_Secret { get; set; }
-        
-        public string? refresh_Token { get; set; }
     }
 }

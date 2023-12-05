@@ -1,19 +1,14 @@
-using System.Text;
 using Ecommerce.Domain.Entities;
 using Ecommerce.LoggerService;
-using Ecommerce.Presentation.Infrastructure.Services;
 using Ecommerce.Service;
 using Ecommerce.Service.Abstraction;
 using Ecommerce.Service.Context;
 using Ecommerce.Service.Contract.Generators;
 using Ecommerce.Service.Seeding;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using OpenIddict.Abstractions;
+
 
 namespace Ecommerce.API.Extensions
 {
@@ -94,59 +89,53 @@ namespace Ecommerce.API.Extensions
             });
         }
 
-
-
-        public static void ConfigureJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
-        {
-            services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(options =>
-            {
-                options.SaveToken = true;
-                options.RequireHttpsMetadata = false;
-                options.TokenValidationParameters = new TokenValidationParameters()
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidAudience = configuration["JWT:ValidAudience"],
-                    ValidIssuer = configuration["JWT:ValidIssuer"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]))
-                };
-            });
-        }
-
-
         public static void ConfigureOpenIddict(this IServiceCollection services)
         {
             services.AddOpenIddict()
                 .AddCore(options =>
                 {
-                    options.UseEntityFrameworkCore().UseDbContext<ApplicationDbContext>();
+                    options.UseEntityFrameworkCore()
+                        .UseDbContext<ApplicationContext>();
                 })
                 .AddServer(options =>
                 {
-                    options.AllowClientCredentialsFlow();
+                    options.SetIssuer(new Uri("https://localhost/7129"));
+                    options.SetAuthorizationEndpointUris("connect/authorize")
+                        .SetLogoutEndpointUris("connect/logout")
+                        .SetTokenEndpointUris("connect/token");
 
-                    options.SetTokenEndpointUris("/connect/token");
+
+                    options.AllowPasswordFlow()
+                       .AllowRefreshTokenFlow();
+
+
+                    options.AllowClientCredentialsFlow()
+                    .AllowRefreshTokenFlow();
+
+                    options.AcceptAnonymousClients();
 
                     options.AddDevelopmentEncryptionCertificate()
                     .AddDevelopmentSigningCertificate();
+
                     options.DisableAccessTokenEncryption();
                     
                     options
                         .AddEphemeralEncryptionKey()
                         .AddEphemeralSigningKey();
-                    
+
                     options.RegisterScopes("api");
 
-                    options.UseAspNetCore().EnableTokenEndpointPassthrough();
-                });
+                    options.UseAspNetCore()
+                        .EnableLogoutEndpointPassthrough()
+                        .EnableAuthorizationEndpointPassthrough()
+                        .EnableTokenEndpointPassthrough();
+                })
+                 .AddValidation(options =>
+                 {
+                     options.UseLocalServer();
 
+                     options.UseAspNetCore();
+                 });
         }
 
         public static void ConfigureCors(this IServiceCollection services) =>
@@ -158,16 +147,13 @@ namespace Ecommerce.API.Extensions
                 .AllowAnyHeader());
             });
 
-
-
-
         public static void ConfigureIdentity(this IServiceCollection services)
         {
             services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
                 options.SignIn.RequireConfirmedAccount = true;
                 options.ClaimsIdentity.UserIdClaimType = "UserId";
-            }).AddEntityFrameworkStores<DataContext>().AddDefaultTokenProviders();
+            }).AddEntityFrameworkStores<ApplicationContext>().AddDefaultTokenProviders();
 
             services.Configure<IdentityOptions>(options =>
             {
@@ -177,35 +163,18 @@ namespace Ecommerce.API.Extensions
             });
         }
 
-
-
         public static void ConfigureSqlContext(this IServiceCollection services, IConfiguration configuration) =>
-            services.AddDbContext<DataContext>(option =>
+            services.AddDbContext<ApplicationContext>(option =>
             {
                 option.UseSqlServer(configuration.GetConnectionString("SqlConnection"));
                 option.UseOpenIddict();
             });
 
-
-
-
-        public static void ConfigureEntityContext(this IServiceCollection services, IConfiguration configuration) =>
-            services.AddDbContext<EntityContext>(option =>
-                option.UseSqlServer(configuration.GetConnectionString("SqlConnection")));
-
         public static void ConfigureLogging(this IServiceCollection services) => 
             services.AddSingleton<ILoggerManager, LoggerManager>();
 
-
-
-
-
         public static void ConfigureDbSeed(this IServiceCollection services) =>
             services.AddScoped<IContextSeed, ContextSeed>();
-
-
-
-
 
         public static void ConfigureTokenGeneration(this IServiceCollection services) =>
             services.AddSingleton<TokenGenerator>();

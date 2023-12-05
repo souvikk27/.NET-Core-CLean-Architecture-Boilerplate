@@ -16,15 +16,15 @@ namespace Ecommerce.Service.Contract.Generators
         private string _clientSecret;
         private string _refreshToken;
 
-        public TokenGenerator(string clientId, string clientSecret, string refreshToken)
+        public TokenGenerator(string clientId, string clientSecret)
         {
             _clientId = clientId;
             _clientSecret = clientSecret;
-            _refreshToken = refreshToken;
         }
 
         public Token GenerateAccessToken(IConfiguration configuration)
         {
+            
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
