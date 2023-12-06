@@ -15,9 +15,9 @@ namespace Ecommerce.Service.Seeding
     {
         private readonly ProductGenerator productGenerator;
         private readonly CategoryGenerator categoryGenerator;
-        private readonly EntityContext context;
+        private readonly ApplicationContext context;
         private readonly ILoggerManager logger;
-        public ContextSeed(EntityContext context, ILoggerManager logger)
+        public ContextSeed(ApplicationContext context, ILoggerManager logger)
         {
             productGenerator = new ProductGenerator();
             categoryGenerator = new CategoryGenerator();

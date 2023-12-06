@@ -15,7 +15,6 @@ namespace Ecommerce.API.ContextFactory
             var builder = new DbContextOptionsBuilder<ApplicationContext>();
             builder.UseSqlServer(configuration.GetConnectionString("SqlConnection"),
                 b => b.MigrationsAssembly("Ecommerce.API"));
-            builder.UseOpenIddict();
 
             return new ApplicationContext(builder.Options);
         }

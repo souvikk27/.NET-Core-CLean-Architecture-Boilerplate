@@ -1,16 +1,25 @@
 ﻿using Ecommerce.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using OpenIddict.EntityFrameworkCore.Models;
 using System.Reflection.Emit;
 
 namespace Ecommerce.Service.Context;
 
-public class ApplicationContext : EntityContext
+public class ApplicationContext : IdentityDbContext<ApplicationUser, IdentityRole, string>
 {
     public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
     {
     }
+
+    public virtual DbSet<Product> Product { get; set; }
+
+    public virtual DbSet<Category> Category { get; set; }
+
+    public DbSet<ApplicationUser> User { get; set; }
+
+    public virtual DbSet<OAuthClient> OAuthClient { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

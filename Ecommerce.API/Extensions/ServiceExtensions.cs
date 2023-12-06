@@ -3,7 +3,6 @@ using Ecommerce.LoggerService;
 using Ecommerce.Presentation.Infrastructure.Services;
 using Ecommerce.Presentation.Infrastructure.Services.Abstraction;
 using Ecommerce.Service;
-using Ecommerce.Service.Abstraction;
 using Ecommerce.Service.Context;
 using Ecommerce.Service.Contract.Generators;
 using Ecommerce.Service.Seeding;
@@ -107,7 +106,7 @@ namespace Ecommerce.API.Extensions
                     options.SetAuthorizationEndpointUris("connect/authorize")
                         .SetLogoutEndpointUris("connect/logout")
                         .SetTokenEndpointUris("connect/token");
-
+                    
 
                     options.AllowPasswordFlow()
                        .AllowRefreshTokenFlow();

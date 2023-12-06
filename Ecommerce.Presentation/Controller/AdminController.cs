@@ -1,7 +1,7 @@
 ﻿using System;
 using Ecommerce.Presentation.Infrastructure.Filtering;
 using Ecommerce.Presentation.Infrastructure.Services.Abstraction;
-
+using Ecommerce.Service.Context;
 
 
 namespace Ecommerce.Presentation.Controller
@@ -11,15 +11,16 @@ namespace Ecommerce.Presentation.Controller
     public class AdminController : ControllerBase
     {
         private readonly UserRepository repository;
-        private readonly IOpenIddictApplicationManager _applicationManager;
         private readonly IClientCredentialService _clientCredentialService;
+        private readonly ApplicationContext _context;
+        private static bool _databaseChecked;
 
-        public AdminController(UserRepository repository, IOpenIddictApplicationManager applicationManager
-            , IClientCredentialService clientCredentialService)
+        public AdminController(UserRepository repository
+            , IClientCredentialService clientCredentialService, ApplicationContext context)
         {
             this.repository = repository;
-            _applicationManager = applicationManager;
             _clientCredentialService = clientCredentialService;
+            _context = context;
         }
 
         [HttpPost]
@@ -27,6 +28,7 @@ namespace Ecommerce.Presentation.Controller
         [ServiceFilter(typeof(ValidationFilterAttribute))]
         public async Task<IActionResult> AddUser([FromBody] UserDto dto)
         {
+            EnsureDatabaseCreated(_context);
             var user = dto.Adapt<ApplicationUser>();
             var cancellationToken = new CancellationTokenSource().Token;
             if (user == null) return ApiResponseExtension.ToErrorApiResult(dto, "User parameters required");
@@ -60,8 +62,13 @@ namespace Ecommerce.Presentation.Controller
             var user = await repository.Delete(id);
             return ApiResponseExtension.ToSuccessApiResult(user, "User credentials removed");
         }
-
-
         
+        
+        private static void EnsureDatabaseCreated(ApplicationContext context)
+        {
+            if (_databaseChecked) return;
+            _databaseChecked = true;
+            context.Database.EnsureCreated();
+        }
     }
 }

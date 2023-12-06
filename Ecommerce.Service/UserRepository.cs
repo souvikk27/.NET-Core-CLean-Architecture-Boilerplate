@@ -80,7 +80,6 @@ namespace Ecommerce.Service
             {
                 throw new InvalidOperationException("Something went wrong please try again later");
             }
-
             return user;
         }
 

@@ -5,15 +5,16 @@ namespace Ecommerce.API
 {
     public class Worker : IHostedService
     {
-        private readonly IServiceProvider serviceProvider;
+        private readonly IServiceProvider _serviceProvider;
 
         public Worker(IServiceProvider serviceProvider)
         {
-            this.serviceProvider = serviceProvider;
+            _serviceProvider = serviceProvider;
         }
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            await using var scope = serviceProvider.CreateAsyncScope();
+            await using var scope = _serviceProvider.CreateAsyncScope();
+
             var context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
             await context.Database.EnsureCreatedAsync();
         }
