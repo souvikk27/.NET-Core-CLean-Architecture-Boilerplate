@@ -2,12 +2,13 @@
 using Ecommerce.Presentation.Infrastructure.Filtering;
 using Ecommerce.Presentation.Infrastructure.Services.Abstraction;
 using Ecommerce.Service.Context;
+using Ecommerce.Shared.DTO.Users;
 
 
 namespace Ecommerce.Presentation.Controller
 {
     [ApiController]
-    [Route("api/v1/[controller]")]
+    [Route("api/v1/admin")]
     public class AdminController : ControllerBase
     {
         private readonly UserRepository repository;
@@ -38,6 +39,35 @@ namespace Ecommerce.Presentation.Controller
             var response = await repository.CreateUser(user, dto.Password, invokeClient);
             return ApiResponseExtension.ToSuccessApiResult(user);
         }
+
+        [HttpPost]
+        [Route("token")]
+        [Consumes("application/x-www-form-urlencoded")]
+        public async Task<IActionResult> GenerateToken([FromForm] UserLoginDto userLoginDto)
+        {
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("https://localhost:7219");
+            
+            var formContent = new FormUrlEncodedContent(new[]
+            {
+                new KeyValuePair<string, string>("grant_type", userLoginDto.GrantType),
+                new KeyValuePair<string, string>("username", userLoginDto.UserName),
+                new KeyValuePair<string, string>("password", userLoginDto.Password),
+                new KeyValuePair<string, string>("scope", userLoginDto.Scope)
+                // Add other required parameters such as client_id, client_secret, scope, etc.
+            });
+            var response = await client.PostAsync("connect/token", formContent);
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                return ApiResponseExtension.ToErrorApiResult(errorMessage);
+            }
+            var tokenResponse = await response.Content.ReadAsStringAsync();
+            return ApiResponseExtension.ToSuccessApiResult(tokenResponse);
+        }
+        
+        
         
 
         [HttpGet]
