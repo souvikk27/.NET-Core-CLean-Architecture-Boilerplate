@@ -37,6 +37,7 @@ public class OpenIdController: ControllerBase
             }
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
+            
             var passwordVerificationResult = _userManager.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
             if (passwordVerificationResult != PasswordVerificationResult.Success)
             {

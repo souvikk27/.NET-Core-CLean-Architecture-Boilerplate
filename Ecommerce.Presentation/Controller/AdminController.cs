@@ -15,13 +15,15 @@ namespace Ecommerce.Presentation.Controller
         private readonly IClientCredentialService _clientCredentialService;
         private readonly ApplicationContext _context;
         private static bool _databaseChecked;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         public AdminController(UserRepository repository
-            , IClientCredentialService clientCredentialService, ApplicationContext context)
+            , IClientCredentialService clientCredentialService, ApplicationContext context, IHttpClientFactory httpClientFactory)
         {
             this.repository = repository;
             _clientCredentialService = clientCredentialService;
             _context = context;
+            _httpClientFactory = httpClientFactory;
         }
 
         [HttpPost]
@@ -45,26 +47,41 @@ namespace Ecommerce.Presentation.Controller
         [Consumes("application/x-www-form-urlencoded")]
         public async Task<IActionResult> GenerateToken([FromForm] UserLoginDto userLoginDto)
         {
-            var client = new HttpClient();
-            client.BaseAddress = new Uri("https://localhost:7219");
-            
-            var formContent = new FormUrlEncodedContent(new[]
+            var username = userLoginDto.UserName;
+            var password = userLoginDto.Password;
+            var scope = userLoginDto.Scope;
+
+            // Create a new HttpClient instance
+            var client = _httpClientFactory.CreateClient();
+
+            // Prepare the form data
+            var formData = new List<KeyValuePair<string, string>>
             {
-                new KeyValuePair<string, string>("grant_type", userLoginDto.GrantType),
-                new KeyValuePair<string, string>("username", userLoginDto.UserName),
-                new KeyValuePair<string, string>("password", userLoginDto.Password),
-                new KeyValuePair<string, string>("scope", userLoginDto.Scope)
-                // Add other required parameters such as client_id, client_secret, scope, etc.
-            });
-            var response = await client.PostAsync("connect/token", formContent);
-            
-            if (!response.IsSuccessStatusCode)
+                new KeyValuePair<string, string>("grant_type", "password"),
+                new KeyValuePair<string, string>("username", username),
+                new KeyValuePair<string, string>("password", password),
+                new KeyValuePair<string, string>("scope", scope)
+            };
+
+            // Create a FormUrlEncodedContent instance
+            var content = new FormUrlEncodedContent(formData);
+
+            // Make the POST request to the Exchange endpoint
+            var response = await client.PostAsync("https://localhost:7219/connect/token", content);
+
+            // Handle the response
+            if (response.IsSuccessStatusCode)
             {
-                var errorMessage = await response.Content.ReadAsStringAsync();
-                return ApiResponseExtension.ToErrorApiResult(errorMessage);
+                var responseData = await response.Content.ReadAsStringAsync();
+                // Parse and handle the response data as needed
+                return Ok(responseData);
             }
-            var tokenResponse = await response.Content.ReadAsStringAsync();
-            return ApiResponseExtension.ToSuccessApiResult(tokenResponse);
+            else
+            {
+                // Handle the error response
+                var errorResponse = await response.Content.ReadAsStringAsync();
+                return BadRequest(errorResponse);
+            }
         }
         
         

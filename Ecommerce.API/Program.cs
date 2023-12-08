@@ -13,6 +13,7 @@ builder.Services.AddControllers(config =>
     config.ReturnHttpNotAcceptable = true;
 }).AddApplicationPart(typeof(Ecommerce.Presentation.AssemblyReference).Assembly);
 builder.Services.AddScoped<ValidationFilterAttribute>();
+builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
 builder.Services.AddMappingConfig();
 builder.Services.ConfigureOpenIddict();

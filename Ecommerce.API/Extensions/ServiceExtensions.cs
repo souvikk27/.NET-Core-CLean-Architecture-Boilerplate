@@ -8,6 +8,7 @@ using Ecommerce.Service.Seeding;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using OpenIddict.Server.AspNetCore;
 using Quartz;
 
 
@@ -110,6 +111,7 @@ namespace Ecommerce.API.Extensions
                     options.AllowPasswordFlow()
                        .AllowRefreshTokenFlow();
 
+                    options.SetRefreshTokenLifetime(null);
 
                     options.AllowClientCredentialsFlow()
                     .AllowRefreshTokenFlow();

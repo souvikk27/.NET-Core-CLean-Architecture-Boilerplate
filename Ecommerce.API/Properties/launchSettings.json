@@ -41,7 +41,7 @@
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
-      "launchUrl": "swagger",
+      "launchUrl": ".well-known/openid-configuration",
       "applicationUrl": "https://localhost:7219;",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
