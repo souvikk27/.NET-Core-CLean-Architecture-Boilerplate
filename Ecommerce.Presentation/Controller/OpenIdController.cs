@@ -1,7 +1,7 @@
-﻿using System.Collections.Immutable;
+﻿using Ecommerce.LoggerService;
 using Ecommerce.OpenAPI.Auth;
+using Ecommerce.OpenAPI.Auth.Abstraction;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.IdentityModel.Tokens;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace Ecommerce.Presentation.Controller;
@@ -13,11 +13,13 @@ public class OpenIdController: ControllerBase
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly ILoggerManager _logger;
 
-    public OpenIdController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+    public OpenIdController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ILoggerManager logger)
     {
         _userManager = userManager;
         _signInManager = signInManager;
+        _logger = logger;
     }
 
     [HttpPost("~/connect/token"), IgnoreAntiforgeryToken, Produces("application/json")]
@@ -33,9 +35,10 @@ public class OpenIdController: ControllerBase
                 var properties = OpenIDAuthService.GetAuthenticationProperties("The specified user doesn't exist.");
                 return ApiResponseExtension.ToErrorApiResult(properties, "OAuth2 Server Error", "404");
             }
-            
+
             var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
-            if (!result.Succeeded)
+            var passwordVerificationResult = _userManager.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
+            if (passwordVerificationResult != PasswordVerificationResult.Success)
             {
                 var properties = OpenIDAuthService.GetAuthenticationProperties("The username/password couple is invalid.");
 
@@ -45,7 +48,7 @@ public class OpenIdController: ControllerBase
             var identity = await OpenIDAuthService.CreateClaimsIdentity(request, user, _userManager);
             return SignIn(new ClaimsPrincipal(identity), OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         }
-        
+
         else if (request.IsRefreshTokenGrantType())
         {
             // Retrieve the claims principal stored in the refresh token.
@@ -73,5 +76,13 @@ public class OpenIdController: ControllerBase
             return SignIn(new ClaimsPrincipal(identity), OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         }
         throw new NotImplementedException("The specified grant type is not implemented.");
-    }  
+    }
+
+
+
+   
+
+
+
+
 }

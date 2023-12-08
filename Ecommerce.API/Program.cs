@@ -30,6 +30,7 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
 
+
 var app = builder.Build();
 var logger = app.Services.GetRequiredService<ILoggerManager>();
 

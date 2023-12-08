@@ -32,10 +32,10 @@ namespace Ecommerce.Service
                 var existingUser = await _userManager.FindByNameAsync(user.UserName);
                 if ( existingUser == null)
                 {
-                    user.OAuthClient = client;
                     var result = await _userManager.CreateAsync(user, password);
                     if (result.Succeeded)
                     {
+                        client.UserId = user.Id;
                         await _context.OAuthClient.AddAsync(client);
                         await _context.SaveChangesAsync();
                         return user;

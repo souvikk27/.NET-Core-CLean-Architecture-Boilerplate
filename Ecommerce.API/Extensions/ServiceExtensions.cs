@@ -1,5 +1,4 @@
 using Ecommerce.Domain.Entities;
-using Ecommerce.LoggerService;
 using Ecommerce.Presentation.Infrastructure.Services;
 using Ecommerce.Presentation.Infrastructure.Services.Abstraction;
 using Ecommerce.Service;
@@ -198,5 +197,8 @@ namespace Ecommerce.API.Extensions
 
         public static void InvokeOauthClient(this IServiceCollection services) => 
             services.AddTransient<IClientCredentialService, ClientCredentialService>();
+
+        //public static void TriggerOpenIdValidation(this IServiceCollection services) =>
+        //    services.AddScoped<IOpenIdValidationService, OpenIdValidationService>();
     }
 }

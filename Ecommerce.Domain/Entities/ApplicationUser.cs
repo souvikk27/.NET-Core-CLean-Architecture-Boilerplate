@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Ecommerce.Domain.Entities
@@ -12,10 +13,8 @@ namespace Ecommerce.Domain.Entities
 
         public string? LastName { get; set; }
 
-        public Guid OAuthClientId { get; set; }
-
-        // Navigation property
-        public OAuthClient OAuthClient { get; set; }
+        [JsonIgnore]
+        public ICollection<OAuthClient> OAuthClient { get; set; }
     }
 
 }

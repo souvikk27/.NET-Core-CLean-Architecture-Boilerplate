@@ -64,7 +64,7 @@ public class ApplicationContext : IdentityDbContext<ApplicationUser, IdentityRol
 
         builder.Entity<OAuthClient>()
            .HasOne(o => o.User)
-           .WithMany(u => (IEnumerable<OAuthClient>)u.OAuthClient)
+           .WithMany(u => u.OAuthClient)
            .HasForeignKey(o => o.UserId)
            .IsRequired();
     }
