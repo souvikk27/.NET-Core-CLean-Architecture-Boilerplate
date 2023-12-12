@@ -1,9 +1,4 @@
-﻿using System;
-using Ecommerce.Presentation.Infrastructure.Filtering;
-using Ecommerce.Presentation.Infrastructure.Services.Abstraction;
-using Ecommerce.Service.Context;
-using Ecommerce.Shared.DTO.Users;
-
+﻿using Ecommerce.OpenAPI.Auth.Services;
 
 namespace Ecommerce.Presentation.Controller
 {
@@ -23,7 +18,6 @@ namespace Ecommerce.Presentation.Controller
             this.repository = repository;
             _clientCredentialService = clientCredentialService;
             _context = context;
-            _httpClientFactory = httpClientFactory;
         }
 
         [HttpPost]
@@ -33,13 +27,14 @@ namespace Ecommerce.Presentation.Controller
         {
             EnsureDatabaseCreated(_context);
             var user = dto.Adapt<ApplicationUser>();
-            var cancellationToken = new CancellationTokenSource().Token;
+            // var cancellationToken = new CancellationTokenSource().Token;
             if (user == null) return ApiResponseExtension.ToErrorApiResult(dto, "User parameters required");
 
             var invokeClient = await _clientCredentialService.InvokeCredentialsAsync();
 
             var response = await repository.CreateUser(user, dto.Password, invokeClient);
-            return ApiResponseExtension.ToSuccessApiResult(user);
+            
+            return ApiResponseExtension.ToSuccessApiResult(response);
         }
 
         [HttpPost]
@@ -83,11 +78,9 @@ namespace Ecommerce.Presentation.Controller
                 return BadRequest(errorResponse);
             }
         }
-        
-        
-        
 
-        [HttpGet]
+
+            [HttpGet]
         public async Task<IActionResult> GetUsers()
         {
             var users = await repository.GetAll();

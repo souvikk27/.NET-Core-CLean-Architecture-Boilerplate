@@ -1,6 +1,4 @@
-﻿using Ecommerce.Service.Seeding;
-
-namespace Ecommerce.API.Extensions
+﻿namespace Ecommerce.API.Extensions
 {
     public static class ApplicationExtensions
     {

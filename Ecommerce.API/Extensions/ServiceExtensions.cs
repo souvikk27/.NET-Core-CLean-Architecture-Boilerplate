@@ -1,17 +1,3 @@
-using Ecommerce.Domain.Entities;
-using Ecommerce.Presentation.Infrastructure.Services;
-using Ecommerce.Presentation.Infrastructure.Services.Abstraction;
-using Ecommerce.Service;
-using Ecommerce.Service.Context;
-using Ecommerce.Service.Contract.Generators;
-using Ecommerce.Service.Seeding;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
-using OpenIddict.Server.AspNetCore;
-using Quartz;
-
-
 namespace Ecommerce.API.Extensions
 {
     public static class ServiceExtensions
@@ -112,6 +98,8 @@ namespace Ecommerce.API.Extensions
                        .AllowRefreshTokenFlow();
 
                     options.SetRefreshTokenLifetime(null);
+                    options.DisableRollingRefreshTokens();
+                    
 
                     options.AllowClientCredentialsFlow()
                     .AllowRefreshTokenFlow();
@@ -200,7 +188,9 @@ namespace Ecommerce.API.Extensions
         public static void InvokeOauthClient(this IServiceCollection services) => 
             services.AddTransient<IClientCredentialService, ClientCredentialService>();
 
-        //public static void TriggerOpenIdValidation(this IServiceCollection services) =>
-        //    services.AddScoped<IOpenIdValidationService, OpenIdValidationService>();
+        public static void TriggerOpenIdAuthentication(this IServiceCollection services)
+        {
+            services.AddScoped<IAuthenticationService, AuthenticationService>();
+        }
     }
 }

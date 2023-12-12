@@ -1,6 +1,4 @@
 ﻿
-using Ecommerce.Service.Context;
-
 namespace Ecommerce.API
 {
     public class Worker : IHostedService

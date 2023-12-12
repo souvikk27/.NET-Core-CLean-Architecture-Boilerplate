@@ -1,6 +1,4 @@
-﻿using Ecommerce.Service.Context;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
+﻿using Microsoft.EntityFrameworkCore.Design;
 
 namespace Ecommerce.API.ContextFactory
 {

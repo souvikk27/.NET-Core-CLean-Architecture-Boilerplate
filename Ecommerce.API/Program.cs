@@ -21,6 +21,7 @@ builder.Services.ConfigureHostedservice();
 builder.Services.ConfigureQuartz();
 builder.Services.ConfigureInfrastructure();
 builder.Services.ConfigureIdentity();
+builder.Services.TriggerOpenIdAuthentication();
 builder.Services.ConfigureSqlContext(configuration);
 builder.Services.ConfigureDbSeed();
 builder.Services.InvokeOauthClient();
