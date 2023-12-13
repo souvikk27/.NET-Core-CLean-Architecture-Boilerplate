@@ -1,3 +1,6 @@
+using OpenIddict.Abstractions;
+using OpenIddict.EntityFrameworkCore;
+
 namespace Ecommerce.API.Extensions
 {
     public static class ServiceExtensions
@@ -84,21 +87,24 @@ namespace Ecommerce.API.Extensions
                 {
                     options.UseEntityFrameworkCore()
                         .UseDbContext<ApplicationContext>();
-                    options.UseQuartz();
+                    options.UseQuartz()
+                            .SetMinimumTokenLifespan(TimeSpan.FromHours(1))
+                            .SetMaximumRefireCount(3);
                 })
                 .AddServer(options =>
                 {
                     options.SetIssuer(new Uri("https://localhost/7129"));
                     options.SetAuthorizationEndpointUris("connect/authorize")
                         .SetLogoutEndpointUris("connect/logout")
-                        .SetTokenEndpointUris("connect/token");
+                        .SetTokenEndpointUris("connect/token")
+                        .SetUserinfoEndpointUris("connect/userinfo");;
                     
 
                     options.AllowPasswordFlow()
                        .AllowRefreshTokenFlow();
 
-                    options.SetRefreshTokenLifetime(null);
-                    options.DisableRollingRefreshTokens();
+                    options.SetRefreshTokenLifetime(null).DisableRollingRefreshTokens();
+                    
                     
 
                     options.AllowClientCredentialsFlow()
@@ -108,7 +114,7 @@ namespace Ecommerce.API.Extensions
 
                     options.AddDevelopmentEncryptionCertificate()
                     .AddDevelopmentSigningCertificate();
-
+                    
                     options.DisableAccessTokenEncryption();
                     
                     options
