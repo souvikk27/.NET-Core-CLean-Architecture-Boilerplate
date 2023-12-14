@@ -1,4 +1,6 @@
 ﻿using Ecommerce.OpenAPI.Auth.Services;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace Ecommerce.Presentation.Controller
 {
@@ -6,7 +8,7 @@ namespace Ecommerce.Presentation.Controller
     [Route("api/v1/admin")]
     public class AdminController : ControllerBase
     {
-        private readonly UserRepository repository;
+        private readonly UserRepository _repository;
         private readonly IClientCredentialService _clientCredentialService;
         private readonly ApplicationContext _context;
         private static bool _databaseChecked;
@@ -15,7 +17,7 @@ namespace Ecommerce.Presentation.Controller
         public AdminController(UserRepository repository
             , IClientCredentialService clientCredentialService, ApplicationContext context, IHttpClientFactory httpClientFactory)
         {
-            this.repository = repository;
+            _repository = repository;
             _clientCredentialService = clientCredentialService;
             _context = context;
         }
@@ -32,9 +34,46 @@ namespace Ecommerce.Presentation.Controller
 
             var invokeClient = await _clientCredentialService.InvokeCredentialsAsync();
 
-            var response = await repository.CreateUser(user, dto.Password, invokeClient);
+            var response = await _repository.CreateUser(user, dto.Password, invokeClient);
             
             return ApiResponseExtension.ToSuccessApiResult(response);
+        }
+
+        [HttpGet]
+        [Route("client")]
+        public async Task<IActionResult> ConfigureClient([FromQuery] Guid userId)
+        {
+            EnsureDatabaseCreated(_context);
+            var user = await _repository.GetById(userId);
+            if(user == null) return ApiResponseExtension.ToErrorApiResult(userId, "User not found");
+
+            var client = _context.OAuthClient.Where(client => client.UserId == user.Id && client.isActive).ToList();
+            return ApiResponseExtension.ToSuccessApiResult(client);
+        }
+
+        [HttpPost]
+        [Route("client/assign")]
+        public async Task<IActionResult> AssignClient([FromQuery] Guid userId)
+        {
+            EnsureDatabaseCreated(_context);
+            var user = await _repository.GetById(userId);
+            var client = await _clientCredentialService.InvokeCredentialsAsync();
+            client.UserId = user.Id;
+            await _context.OAuthClient.AddAsync(client);
+            await _context.SaveChangesAsync();
+            return ApiResponseExtension.ToSuccessApiResult(client);
+        }
+        
+        [HttpPost]
+        [Route("client/retire")]
+        [Consumes("application/x-www-form-urlencoded")]
+        public async Task<IActionResult> RetireClient([FromForm] Guid clientId)
+        {
+            EnsureDatabaseCreated(_context);
+            var client = await _context.OAuthClient.Where(client => client.Id == clientId).FirstOrDefaultAsync();
+            client.isActive = false;
+            await _context.SaveChangesAsync();
+            return ApiResponseExtension.ToSuccessApiResult(client);
         }
 
         [HttpPost]
@@ -80,10 +119,10 @@ namespace Ecommerce.Presentation.Controller
         }
 
 
-            [HttpGet]
+        [HttpGet]
         public async Task<IActionResult> GetUsers()
         {
-            var users = await repository.GetAll();
+            var users = await _repository.GetAll();
             return Ok(users);
         }
 
@@ -91,7 +130,7 @@ namespace Ecommerce.Presentation.Controller
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUserById(Guid id)
         {
-            var user = await repository.GetById(id);
+            var user = await _repository.GetById(id);
             return ApiResponseExtension.ToSuccessApiResult(user);
         }
         
@@ -99,7 +138,7 @@ namespace Ecommerce.Presentation.Controller
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(Guid id)
         {
-            var user = await repository.Delete(id);
+            var user = await _repository.Delete(id);
             return ApiResponseExtension.ToSuccessApiResult(user, "User credentials removed");
         }
         

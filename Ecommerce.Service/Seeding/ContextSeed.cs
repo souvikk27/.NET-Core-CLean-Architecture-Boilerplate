@@ -2,12 +2,7 @@
 using Ecommerce.LoggerService;
 using Ecommerce.Service.Context;
 using Ecommerce.Service.Contract.Generators;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Ecommerce.Service.Seeding
 {
