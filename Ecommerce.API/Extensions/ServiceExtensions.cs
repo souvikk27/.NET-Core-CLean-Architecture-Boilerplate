@@ -94,14 +94,20 @@ namespace Ecommerce.API.Extensions
                 .AddServer(options =>
                 {
                     options.SetIssuer(new Uri("https://localhost/7129"));
+
                     options.SetAuthorizationEndpointUris("connect/authorize")
                         .SetLogoutEndpointUris("connect/logout")
-                        .SetTokenEndpointUris("connect/token")
-                        .SetUserinfoEndpointUris("connect/userinfo");;
-                    
+                        .SetIntrospectionEndpointUris("/connect/introspect")
+                        .SetTokenEndpointUris("/connect/token")
+                        .SetUserinfoEndpointUris("/connect/userinfo")
+                        .SetVerificationEndpointUris("/connect/verify");
+
 
                     options.AllowPasswordFlow()
-                       .AllowRefreshTokenFlow();
+                           .AllowRefreshTokenFlow()
+                           .AllowHybridFlow()
+                           .AllowClientCredentialsFlow()
+                           .AllowAuthorizationCodeFlow();
 
                     options.SetRefreshTokenLifetime(null).DisableRollingRefreshTokens();
                     
@@ -124,9 +130,13 @@ namespace Ecommerce.API.Extensions
                     options.RegisterScopes("api");
 
                     options.UseAspNetCore()
+                        .EnableStatusCodePagesIntegration()
+                        .EnableAuthorizationEndpointPassthrough()
                         .EnableLogoutEndpointPassthrough()
                         .EnableAuthorizationEndpointPassthrough()
-                        .EnableTokenEndpointPassthrough();
+                        .EnableTokenEndpointPassthrough()
+                        .EnableUserinfoEndpointPassthrough()
+                        .EnableVerificationEndpointPassthrough();
                 })
                  .AddValidation(options =>
                  {

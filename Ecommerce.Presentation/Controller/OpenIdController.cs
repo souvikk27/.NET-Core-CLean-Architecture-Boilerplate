@@ -14,7 +14,7 @@ using IAuthenticationService = Ecommerce.OpenAPI.Auth.Abstraction.IAuthenticatio
 namespace Ecommerce.Presentation.Controller;
 
 [ApiController]
-[Route("api/v1/[controller]")]
+[Route("api/v1/oAuth2")]
 
 public class OpenIdController: ControllerBase
 {
@@ -138,9 +138,10 @@ public class OpenIdController: ControllerBase
         }
     }
 
-
-    //[Authorize]
+    #region Authorization Code Grant
+    //[Authorize, FormValueRequired("submit.Accept")]
     //[HttpPost("~/connect/authorize"), ValidateAntiForgeryToken]
+
     //public async Task<IActionResult> Accept()
     //{
     //    var request = HttpContext.GetOpenIddictServerRequest() ??
@@ -212,6 +213,14 @@ public class OpenIdController: ControllerBase
     //    return SignIn(new ClaimsPrincipal(identity), OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
     //}
 
+    //[Authorize, FormValueRequired("submit.Deny")]
+    //[HttpPost("~/connect/authorize"), ValidateAntiForgeryToken]
+    //// Notify OpenIddict that the authorization grant has been denied by the resource owner
+    //// to redirect the user agent to the client application using the appropriate response_mode.
+    //public IActionResult Deny() => Forbid(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+
+
+    #endregion  
 
     [HttpPost("~/connect/logout"), ValidateAntiForgeryToken]
     public async Task<IActionResult> LogoutPost()
@@ -231,6 +240,24 @@ public class OpenIdController: ControllerBase
     public async Task<IActionResult> Exchange()
     {
         var request = HttpContext.GetOpenIddictServerRequest();
+
+        if(request.IsClientCredentialsGrantType())
+        {
+            var response = await _authService.AuthenticateClientCredentialGrantAsync(HttpContext);
+            if (!response.Success)
+            {
+                return ApiResponseExtension.ToErrorApiResult(response.Properties, "OAuth2 Server Error", "404");
+            }
+            return SignIn(response.Principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+        }
+
+        if (request.IsAuthorizationCodeGrantType())
+        {
+
+
+        }
+
+
         if (request.IsPasswordGrantType())
         {
             var response = await _authService.AuthenticatePasswordGrantAsync(HttpContext, request.Username, request.Password);

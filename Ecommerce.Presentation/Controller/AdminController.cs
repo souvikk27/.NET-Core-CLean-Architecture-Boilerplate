@@ -1,5 +1,6 @@
 ﻿using Ecommerce.OpenAPI.Auth.Services;
 using Microsoft.EntityFrameworkCore;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 
 namespace Ecommerce.Presentation.Controller
@@ -13,13 +14,15 @@ namespace Ecommerce.Presentation.Controller
         private readonly ApplicationContext _context;
         private static bool _databaseChecked;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IOpenIddictApplicationManager _applicationManager;
 
         public AdminController(UserRepository repository
-            , IClientCredentialService clientCredentialService, ApplicationContext context, IHttpClientFactory httpClientFactory)
+            , IClientCredentialService clientCredentialService, ApplicationContext context, IHttpClientFactory httpClientFactory, IOpenIddictApplicationManager applicationManager)
         {
             _repository = repository;
             _clientCredentialService = clientCredentialService;
             _context = context;
+            _applicationManager = applicationManager;
         }
 
         [HttpPost]
@@ -52,16 +55,63 @@ namespace Ecommerce.Presentation.Controller
         }
 
         [HttpPost]
-        [Route("client/assign")]
-        public async Task<IActionResult> AssignClient([FromQuery] Guid userId)
+        [Route("client/register")]
+        [Consumes("application/x-www-form-urlencoded")]
+        public async Task<IActionResult> RegisterClient([FromForm] Guid userId)
         {
             EnsureDatabaseCreated(_context);
             var user = await _repository.GetById(userId);
+            if (user == null) return ApiResponseExtension.ToErrorApiResult(userId, "User not found");
             var client = await _clientCredentialService.InvokeCredentialsAsync();
             client.UserId = user.Id;
             await _context.OAuthClient.AddAsync(client);
             await _context.SaveChangesAsync();
             return ApiResponseExtension.ToSuccessApiResult(client);
+        }
+
+        [HttpPost]
+        [Route("client/assign")]
+        public async Task<IActionResult> AssignClient([FromForm] ClientDto clientDto, CancellationToken cancellationToken)
+        {
+            var client = clientDto.Adapt<OAuthClient>();
+            var applicationClient = await _applicationManager.FindByClientIdAsync(client.Clientid);
+            if(applicationClient == null)
+            {
+                await _applicationManager.CreateAsync(new OpenIddictApplicationDescriptor
+                {
+                    ClientId = client.Clientid,
+                    ClientSecret = client.Clientsecret,
+                    PostLogoutRedirectUris =
+                    {
+                        new Uri("https://localhost:44381/signout-callback-oidc")
+                    },
+                    RedirectUris =
+                    {
+                        new Uri("https://localhost:44381/signin-oidc")
+                    },
+                    Permissions =
+                    {
+                        Permissions.Endpoints.Authorization,
+                        Permissions.Endpoints.Logout,
+                        Permissions.Endpoints.Token,
+                        Permissions.GrantTypes.AuthorizationCode,
+                        Permissions.GrantTypes.RefreshToken,
+                        Permissions.GrantTypes.ClientCredentials,
+                        Permissions.ResponseTypes.Code,
+                        Permissions.Scopes.Email,
+                        Permissions.Scopes.Profile,
+                        Permissions.Scopes.Roles,
+                        Permissions.Prefixes.Scope + "api"
+                    },
+                    Requirements =
+                    {
+                        Requirements.Features.ProofKeyForCodeExchange
+                    }
+                }, cancellationToken);
+
+                return ApiResponseExtension.ToSuccessApiResult("OpenId Server Response", "Client assigned successfully");
+            }
+            return ApiResponseExtension.ToWarningApiResult("OpenId Server Response", "Client already exists");
         }
         
         [HttpPost]
