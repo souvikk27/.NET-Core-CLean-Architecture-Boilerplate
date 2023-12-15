@@ -81,19 +81,21 @@ namespace Ecommerce.Presentation.Controller
                 {
                     ClientId = client.Clientid,
                     ClientSecret = client.Clientsecret,
+                    ConsentType = ConsentTypes.Explicit,
                     PostLogoutRedirectUris =
                     {
-                        new Uri("https://localhost:44381/signout-callback-oidc")
+                        new Uri("https://localhost:7219/signout-callback-oidc")
                     },
                     RedirectUris =
                     {
-                        new Uri("https://localhost:44381/signin-oidc")
+                        new Uri("https://localhost:7219/signin-oidc")
                     },
                     Permissions =
                     {
                         Permissions.Endpoints.Authorization,
                         Permissions.Endpoints.Logout,
                         Permissions.Endpoints.Token,
+                        Permissions.ResponseTypes.CodeIdToken,
                         Permissions.GrantTypes.AuthorizationCode,
                         Permissions.GrantTypes.RefreshToken,
                         Permissions.GrantTypes.ClientCredentials,

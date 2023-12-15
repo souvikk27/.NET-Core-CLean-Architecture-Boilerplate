@@ -3,6 +3,9 @@ using Ecommerce.Domain.Entities.Generic;
 using Microsoft.AspNetCore;
 using IAuthenticationService = Ecommerce.OpenAPI.Auth.Abstraction.IAuthenticationService;
 using static OpenIddict.Abstractions.OpenIddictConstants;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.Security.Cryptography;
 namespace Ecommerce.OpenAPI.Auth.Services;
 
 public class AuthenticationService : IAuthenticationService
@@ -54,7 +57,7 @@ public class AuthenticationService : IAuthenticationService
     {
         var request = context.GetOpenIddictServerRequest();
 
-        if(request.ClientId != null)
+        if(request?.ClientId != null)
         {
             var clientIdentity = new ClaimsIdentity(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
             clientIdentity.AddClaim(OpenIddictConstants.Claims.Subject, request.ClientId);
@@ -91,7 +94,7 @@ public class AuthenticationService : IAuthenticationService
     public async Task<AuthenticationResult> AuthenticateClientCredentialGrantAsync(HttpContext context)
     {
         var request = context.GetOpenIddictServerRequest();
-        var client = await _applicationManager.FindByClientIdAsync(request.ClientId);
+        var client = await _applicationManager.FindByClientIdAsync(request?.ClientId);
         if (client == null)
         {
             const string message = "The specified client doesn't exist.";
@@ -107,4 +110,34 @@ public class AuthenticationService : IAuthenticationService
         principal.SetScopes(request.GetScopes());
         return new AuthenticationResult(true, "Authentication Succeeded", new ClaimsPrincipal(identity));
     }
+
+
+
+
+
+    //private bool ValidatePkce(string codeChallenge, string codeChallengeMethod)
+    //{
+    //    // Assuming codeVerifier is stored somewhere (e.g., in a database or a secure cache)
+    //    string storedCodeVerifier = /* retrieve the stored code verifier based on the specific user or session */;
+
+    //    // If the code challenge method is plain, the code challenge is the same as the code verifier.
+    //    if (codeChallengeMethod == OpenIddictConstants.CodeChallengeMethods.Plain)
+    //    {
+    //        return string.Equals(codeChallenge, storedCodeVerifier, StringComparison.Ordinal);
+    //    }
+    //    // If the code challenge method is S256, SHA256-hash the code verifier and compare it with the code challenge.
+    //    else if (codeChallengeMethod == OpenIddictConstants.CodeChallengeMethods.Sha256)
+    //    {
+    //        using (var sha256 = SHA256.Create())
+    //        {
+    //            byte[] hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(storedCodeVerifier));
+    //            string hashedCodeVerifier = Base64UrlEncoder.Encode(hashedBytes);
+
+    //            return string.Equals(codeChallenge, hashedCodeVerifier, StringComparison.Ordinal);
+    //        }
+    //    }
+    //    // Unsupported code challenge method
+    //    return false;
+    //}
+
 }

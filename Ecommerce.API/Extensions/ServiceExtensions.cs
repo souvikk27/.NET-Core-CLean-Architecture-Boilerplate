@@ -110,8 +110,8 @@ namespace Ecommerce.API.Extensions
                            .AllowAuthorizationCodeFlow();
 
                     options.SetRefreshTokenLifetime(null).DisableRollingRefreshTokens();
-                    
-                    
+
+                    options.RequireProofKeyForCodeExchange();
 
                     options.AllowClientCredentialsFlow()
                     .AllowRefreshTokenFlow();
