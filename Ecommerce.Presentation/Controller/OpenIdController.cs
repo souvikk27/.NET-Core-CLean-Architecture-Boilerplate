@@ -1,9 +1,12 @@
 ﻿using Ecommerce.OpenAPI.Auth;
+using Ecommerce.OpenAPI.Auth.AuthEntity;
 using Ecommerce.Presentation.Extensions;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
+using OpenIddict.Client.AspNetCore;
 using System.Collections.Immutable;
 using System.Net;
 using static OpenIddict.Abstractions.OpenIddictConstants;
@@ -16,7 +19,7 @@ namespace Ecommerce.Presentation.Controller;
 [ApiController]
 [Route("api/v1/oAuth2")]
 
-public class OpenIdController: ControllerBase
+public class OpenIdController : ControllerBase
 {
     private readonly IOpenIddictApplicationManager _applicationManager;
     private readonly IOpenIddictAuthorizationManager _authorizationManager;
@@ -48,11 +51,12 @@ public class OpenIdController: ControllerBase
 
         if (!result.Succeeded)
         {
+
             return Challenge(
                 authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
                 properties: new AuthenticationProperties
                 {
-                    RedirectUri = Request.PathBase + Request.Path + QueryString.Create(
+                    RedirectUri =  Request.Path + QueryString.Create(
                         Request.HasFormContentType ? Request.Form.ToList() : Request.Query.ToList())
                 });
         }
@@ -240,7 +244,7 @@ public class OpenIdController: ControllerBase
     {
         var request = HttpContext.GetOpenIddictServerRequest();
 
-        if(request.IsClientCredentialsGrantType())
+        if (request.IsClientCredentialsGrantType())
         {
             var response = await _authService.AuthenticateClientCredentialGrantAsync(HttpContext);
             if (!response.Success)
@@ -263,7 +267,7 @@ public class OpenIdController: ControllerBase
             if (!response.Success)
             {
                 return ApiResponseExtension.ToErrorApiResult(response.Properties, "OAuth2 Server Error", "404");
-                
+
             }
             return SignIn(response.Principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         }
@@ -278,5 +282,65 @@ public class OpenIdController: ControllerBase
             return SignIn(response.Principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         }
         throw new NotImplementedException("The specified grant type is not implemented.");
+    }
+
+    [HttpGet("~/signin-oidc")]
+    public async Task<IActionResult> Callback(string redirectUrl = null)
+    {
+
+        var info = await _signInManager.GetExternalLoginInfoAsync();
+        if (info is null)
+        {
+            var url = new CallbackLinkDto
+            {
+                ReturnURL = Url.Action("Login"),
+                Rel = "login",
+                Method = "POST"
+            };
+            return ApiResponseExtension.ToInfoApiResult(url);
+        }
+
+        return ApiResponseExtension.ToErrorApiResult("OpenId Connect", "Url Redirection Failed", "404");
+    }
+
+    [HttpPost]
+    [AllowAnonymous]
+    [ValidateAntiForgeryToken]
+    [Route("~/api/oauth/v2/login")]
+    public async Task<IActionResult> Login([FromForm] AuthCallback authCallback, string returnUrl = null)
+    {
+        authCallback.ReturnUrl = returnUrl;
+        if (ModelState.IsValid)
+        {
+            // This doesn't count login failures towards account lockout
+            // To enable password failures to trigger account lockout, set lockoutOnFailure: true
+            var result = await _signInManager.PasswordSignInAsync(authCallback.UserName, authCallback.Password, authCallback.RememberMe, lockoutOnFailure: false);
+            if (result.Succeeded)
+            {
+                CallbackLinkDto callbackLinkDto = new CallbackLinkDto
+                {
+                    ReturnURL = returnUrl,
+                    Rel = "authorize",
+                    Method = "GET"
+                };
+                return Ok(callbackLinkDto);
+            }
+            //if (result.RequiresTwoFactor)
+            //{
+            //    return RedirectToAction(nameof(SendCode), new { ReturnUrl = returnUrl, RememberMe = authCallback.RememberMe });
+            //}
+            if (result.IsLockedOut)
+            {
+                return ApiResponseExtension.ToErrorApiResult("OAuth Server Violation", "User is locked out", "401");
+            }
+            else
+            {
+                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                return ApiResponseExtension.ToErrorApiResult("OAuth Server Violation", "Invalid Login Attempt", "401");
+            }
+        }
+
+        // If we got this far, something failed, redisplay form
+        return ApiResponseExtension.ToErrorApiResult("OAuth Server Violation", "Internal Server Error. Please try again after sometime", "500");
     }
 }

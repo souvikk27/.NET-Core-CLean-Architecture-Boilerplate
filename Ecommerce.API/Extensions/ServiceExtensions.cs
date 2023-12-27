@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using OpenIddict.EntityFrameworkCore;
+using OpenIddict.Validation.AspNetCore;
 
 namespace Ecommerce.API.Extensions
 {
@@ -80,6 +83,21 @@ namespace Ecommerce.API.Extensions
             });
         }
 
+        public static void InvokeAuthentication(this IServiceCollection services)
+        {
+            services.AddAuthentication(config =>
+            {
+                config.DefaultChallengeScheme = OpenIddictServerAspNetCoreDefaults.AuthenticationScheme;
+            })
+            .AddOpenIdConnect(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme, options =>
+            {
+                // this is my Authorization Server Port
+                options.Authority = "https://localhost:7219";
+                options.CallbackPath = "/signin-oidc";
+                options.SaveTokens = true;
+            });
+        }
+
         public static void ConfigureOpenIddict(this IServiceCollection services)
         {
             services.AddOpenIddict()
@@ -101,8 +119,7 @@ namespace Ecommerce.API.Extensions
                         .SetTokenEndpointUris("/connect/token")
                         .SetUserinfoEndpointUris("/connect/userinfo")
                         .SetVerificationEndpointUris("/connect/verify");
-
-
+                    
                     options.AllowPasswordFlow()
                            .AllowRefreshTokenFlow()
                            .AllowHybridFlow()
@@ -141,11 +158,17 @@ namespace Ecommerce.API.Extensions
                  .AddValidation(options =>
                  {
                      options.UseLocalServer();
-
+                     options.EnableAuthorizationEntryValidation();
                      options.UseAspNetCore();
                  });
         }
 
+        public static void ConfigureStaticRednering(this IServiceCollection services)
+        {
+            services.AddRazorPages();
+            services.AddRazorComponents();
+        }
+        
         public static void ConfigureCors(this IServiceCollection services) =>
             services.AddCors(options =>
             {
@@ -183,9 +206,6 @@ namespace Ecommerce.API.Extensions
 
         public static void ConfigureDbSeed(this IServiceCollection services) =>
             services.AddScoped<IContextSeed, ContextSeed>();
-
-        public static void ConfigureTokenGeneration(this IServiceCollection services) =>
-            services.AddSingleton<TokenGenerator>();
 
         public static void ConfigureHostedservice(this IServiceCollection services) => services.AddHostedService<Worker>();
 

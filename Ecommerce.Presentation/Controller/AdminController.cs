@@ -1,5 +1,12 @@
-﻿using Ecommerce.OpenAPI.Auth.Services;
+﻿using Ecommerce.OpenAPI.Auth.AuthEntity;
+using Ecommerce.OpenAPI.Auth.Services;
+using Ecommerce.Presentation.Static;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
+using RestSharp;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 
@@ -14,15 +21,17 @@ namespace Ecommerce.Presentation.Controller
         private readonly ApplicationContext _context;
         private static bool _databaseChecked;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IOpenIddictApplicationManager _applicationManager;
 
         public AdminController(UserRepository repository
-            , IClientCredentialService clientCredentialService, ApplicationContext context, IHttpClientFactory httpClientFactory, IOpenIddictApplicationManager applicationManager)
+            , IClientCredentialService clientCredentialService, ApplicationContext context, IHttpClientFactory httpClientFactory, IOpenIddictApplicationManager applicationManager, SignInManager<ApplicationUser> signInManager)
         {
             _repository = repository;
             _clientCredentialService = clientCredentialService;
             _context = context;
             _applicationManager = applicationManager;
+            _signInManager = signInManager;
         }
 
         [HttpPost]
@@ -128,6 +137,8 @@ namespace Ecommerce.Presentation.Controller
             return ApiResponseExtension.ToSuccessApiResult(client);
         }
 
+
+
         [HttpPost]
         [Route("token")]
         [Consumes("application/x-www-form-urlencoded")]
@@ -170,7 +181,6 @@ namespace Ecommerce.Presentation.Controller
             }
         }
 
-
         [HttpGet]
         public async Task<IActionResult> GetUsers()
         {
@@ -193,8 +203,7 @@ namespace Ecommerce.Presentation.Controller
             var user = await _repository.Delete(id);
             return ApiResponseExtension.ToSuccessApiResult(user, "User credentials removed");
         }
-        
-        
+
         private static void EnsureDatabaseCreated(ApplicationContext context)
         {
             if (_databaseChecked) return;

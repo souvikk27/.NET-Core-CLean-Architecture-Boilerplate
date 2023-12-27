@@ -14,7 +14,7 @@ namespace Ecommerce.API
             await using var scope = _serviceProvider.CreateAsyncScope();
 
             var context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-            await context.Database.EnsureCreatedAsync();
+            await context.Database.EnsureCreatedAsync(cancellationToken);
         }
 
         public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;

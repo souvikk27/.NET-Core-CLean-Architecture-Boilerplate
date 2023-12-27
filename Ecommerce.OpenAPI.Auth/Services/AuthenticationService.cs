@@ -115,29 +115,29 @@ public class AuthenticationService : IAuthenticationService
 
 
 
-    //private bool ValidatePkce(string codeChallenge, string codeChallengeMethod)
-    //{
-    //    // Assuming codeVerifier is stored somewhere (e.g., in a database or a secure cache)
-    //    string storedCodeVerifier = /* retrieve the stored code verifier based on the specific user or session */;
+    private bool ValidatePkce(string codeChallenge, string codeChallengeMethod, string codeVerifier)
+    {
+        // Assuming codeVerifier is stored somewhere (e.g., in a database or a secure cache)
+        string storedCodeVerifier = codeVerifier ?? string.Empty;
 
-    //    // If the code challenge method is plain, the code challenge is the same as the code verifier.
-    //    if (codeChallengeMethod == OpenIddictConstants.CodeChallengeMethods.Plain)
-    //    {
-    //        return string.Equals(codeChallenge, storedCodeVerifier, StringComparison.Ordinal);
-    //    }
-    //    // If the code challenge method is S256, SHA256-hash the code verifier and compare it with the code challenge.
-    //    else if (codeChallengeMethod == OpenIddictConstants.CodeChallengeMethods.Sha256)
-    //    {
-    //        using (var sha256 = SHA256.Create())
-    //        {
-    //            byte[] hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(storedCodeVerifier));
-    //            string hashedCodeVerifier = Base64UrlEncoder.Encode(hashedBytes);
+        // If the code challenge method is plain, the code challenge is the same as the code verifier.
+        if (codeChallengeMethod == OpenIddictConstants.CodeChallengeMethods.Plain)
+        {
+            return string.Equals(codeChallenge, storedCodeVerifier, StringComparison.Ordinal);
+        }
+        // If the code challenge method is S256, SHA256-hash the code verifier and compare it with the code challenge.
+        else if (codeChallengeMethod == OpenIddictConstants.CodeChallengeMethods.Sha256)
+        {
+            using (var sha256 = SHA256.Create())
+            {
+                byte[] hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(storedCodeVerifier));
+                string hashedCodeVerifier = Base64UrlEncoder.Encode(hashedBytes);
 
-    //            return string.Equals(codeChallenge, hashedCodeVerifier, StringComparison.Ordinal);
-    //        }
-    //    }
-    //    // Unsupported code challenge method
-    //    return false;
-    //}
+                return string.Equals(codeChallenge, hashedCodeVerifier, StringComparison.Ordinal);
+            }
+        }
+        // Unsupported code challenge method
+        return false;
+    }
 
 }

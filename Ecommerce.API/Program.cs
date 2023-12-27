@@ -30,7 +30,7 @@ builder.Services.ConfigureCors();
 builder.Services.ConfigureLogging();
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
-
+builder.Services.ConfigureStaticRednering();
 
 
 var app = builder.Build();
@@ -50,7 +50,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseStatusCodePagesWithReExecute("/error");
-
+app.UseStaticFiles();
 app.UseDeveloperExceptionPage();
 app.UseCors("AllowAllOrigins");
 
