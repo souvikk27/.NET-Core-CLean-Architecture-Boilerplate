@@ -1,6 +1,8 @@
 ﻿using Ecommerce.OpenAPI.Auth;
 using Ecommerce.OpenAPI.Auth.AuthEntity;
 using Ecommerce.Presentation.Extensions;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -9,7 +11,9 @@ using OpenIddict.Abstractions;
 using OpenIddict.Client.AspNetCore;
 using System.Collections.Immutable;
 using System.Net;
+using static Dapper.SqlMapper;
 using static OpenIddict.Abstractions.OpenIddictConstants;
+using static System.Formats.Asn1.AsnWriter;
 using IAuthenticationService = Ecommerce.OpenAPI.Auth.Abstraction.IAuthenticationService;
 
 
@@ -47,7 +51,7 @@ public class OpenIdController : ControllerBase
         var request = HttpContext.GetOpenIddictServerRequest() ??
         throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
 
-        var result = await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+        var result = await HttpContext.AuthenticateAsync();
 
         if (!result.Succeeded)
         {
@@ -56,7 +60,7 @@ public class OpenIdController : ControllerBase
                 authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
                 properties: new AuthenticationProperties
                 {
-                    RedirectUri =  Request.Path + QueryString.Create(
+                    RedirectUri = Request.Path + QueryString.Create(
                         Request.HasFormContentType ? Request.Form.ToList() : Request.Query.ToList())
                 });
         }
@@ -256,10 +260,15 @@ public class OpenIdController : ControllerBase
 
         if (request.IsAuthorizationCodeGrantType())
         {
-
+            var response = await _authService.AuthenticateCodeGrantAsync(HttpContext);
+            if (!response.Success)
+            {
+                return ApiResponseExtension.ToErrorApiResult(response.Properties, "OAuth2 Server Error", "404");
+            }
+            // Returning a SignInResult will ask OpenIddict to issue the appropriate access/identity tokens.
+            return SignIn(response.Principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
 
         }
-
 
         if (request.IsPasswordGrantType())
         {
@@ -271,6 +280,7 @@ public class OpenIdController : ControllerBase
             }
             return SignIn(response.Principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         }
+
         else if (request.IsRefreshTokenGrantType())
         {
             var response = await _authService.AuthenticateRefreshTokenGrantAsync(HttpContext);
@@ -285,15 +295,16 @@ public class OpenIdController : ControllerBase
     }
 
     [HttpGet("~/signin-oidc")]
-    public async Task<IActionResult> Callback(string redirectUrl = null)
+    public async Task<IActionResult> Callback()
     {
 
         var info = await _signInManager.GetExternalLoginInfoAsync();
         if (info is null)
         {
+            var returnUrl = HttpContext.Request.Headers["Referer"];
             var url = new CallbackLinkDto
             {
-                ReturnURL = Url.Action("Login"),
+                ReturnURL = Url.Action("Login", new { returnUrl = returnUrl }),
                 Rel = "login",
                 Method = "POST"
             };
@@ -305,8 +316,7 @@ public class OpenIdController : ControllerBase
 
     [HttpPost]
     [AllowAnonymous]
-    [ValidateAntiForgeryToken]
-    [Route("~/api/oauth/v2/login")]
+    [Route("~/login")]
     public async Task<IActionResult> Login([FromForm] AuthCallback authCallback, string returnUrl = null)
     {
         authCallback.ReturnUrl = returnUrl;
@@ -315,15 +325,48 @@ public class OpenIdController : ControllerBase
             // This doesn't count login failures towards account lockout
             // To enable password failures to trigger account lockout, set lockoutOnFailure: true
             var result = await _signInManager.PasswordSignInAsync(authCallback.UserName, authCallback.Password, authCallback.RememberMe, lockoutOnFailure: false);
+            var user = await _userManager.FindByNameAsync(authCallback.UserName);
+            if (user == null)
+            {
+                return ApiResponseExtension.ToErrorApiResult("OAuth Server Violation", "User not found", "401");
+            }
+
+            var challengeCredentials = OpenIDAuthService.ExtractFromUrl(returnUrl);
+
             if (result.Succeeded)
             {
-                CallbackLinkDto callbackLinkDto = new CallbackLinkDto
+
+                var claimsIdentity = new ClaimsIdentity(authenticationType: TokenValidationParameters.DefaultAuthenticationType,
+                                nameType: Claims.Name,
+                                roleType: Claims.Role);
+
+                // Add the claims that will be persisted in the tokens.
+               claimsIdentity.SetClaim(Claims.Subject, user.Id)
+                        .SetClaim(Claims.Email,  user.Email)
+                        .SetClaim(Claims.Name, user.UserName)
+                        .SetClaims(Claims.Role, (await _userManager.GetRolesAsync(user)).ToImmutableArray());
+
+                var principal = new ClaimsPrincipal(claimsIdentity);
+                var authProperties = new AuthenticationProperties
                 {
-                    ReturnURL = returnUrl,
-                    Rel = "authorize",
-                    Method = "GET"
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(20), // Set the expiration time for the cookie
+                    IsPersistent = authCallback.RememberMe,
+                    RedirectUri = returnUrl
                 };
-                return Ok(callbackLinkDto);
+                var authenticationTicket = new AuthenticationTicket(
+                new ClaimsPrincipal(claimsIdentity),
+                authProperties,
+                OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+
+                var authorizationUrl = "/connect/authorize";  // Adjust this to the actual authorization endpoint
+                var clientId = challengeCredentials.ClientId;// Replace with your actual client ID
+                var clientSecret = challengeCredentials.ClientSecret;
+                var redirectUri = "/signin-oidc";// Replace with your actual redirect URI
+                var responseType = challengeCredentials.ResponseType;
+                var codeChallenge = challengeCredentials.CodeChallenge;
+                var scope = "offline_access";
+                var authorizationRequestUrl = $"{authorizationUrl}?client_id={clientId}&client_secret={clientSecret}&response_type={responseType}&code_challenge={codeChallenge}&scope={scope}";
+                return Redirect(authorizationRequestUrl);
             }
             //if (result.RequiresTwoFactor)
             //{

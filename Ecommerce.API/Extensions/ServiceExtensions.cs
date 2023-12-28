@@ -88,13 +88,7 @@ namespace Ecommerce.API.Extensions
             services.AddAuthentication(config =>
             {
                 config.DefaultChallengeScheme = OpenIddictServerAspNetCoreDefaults.AuthenticationScheme;
-            })
-            .AddOpenIdConnect(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme, options =>
-            {
-                // this is my Authorization Server Port
-                options.Authority = "https://localhost:7219";
-                options.CallbackPath = "/signin-oidc";
-                options.SaveTokens = true;
+                config.DefaultAuthenticateScheme = OpenIddictServerAspNetCoreDefaults.AuthenticationScheme;
             });
         }
 

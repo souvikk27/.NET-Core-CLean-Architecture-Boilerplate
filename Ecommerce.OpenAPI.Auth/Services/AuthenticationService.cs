@@ -6,6 +6,8 @@ using static OpenIddict.Abstractions.OpenIddictConstants;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Security.Cryptography;
+using System.Collections.Immutable;
+using Azure.Core;
 namespace Ecommerce.OpenAPI.Auth.Services;
 
 public class AuthenticationService : IAuthenticationService
@@ -112,7 +114,51 @@ public class AuthenticationService : IAuthenticationService
     }
 
 
+    public async Task<AuthenticationResult> AuthenticateCodeGrantAsync(HttpContext context)
+    {
+        var request = context.GetOpenIddictServerRequest();
+        // Retrieve the claims principal stored in the authorization code
+        var result = await context.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
 
+        // Retrieve the user profile corresponding to the authorization code/refresh token.
+        var user = await _userManager.FindByIdAsync(result.Principal.GetClaim(Claims.Subject));
+        if (user is null)
+        {
+            const string message = "The specified user doesn't exist.";
+            var properties = OpenIDAuthService.GetAuthenticationProperties(message);
+            _logger.LogError(message);
+            return new AuthenticationResult(false, message, properties);
+        }
+
+        // Ensure the user is still allowed to sign in.
+        if (!await _signInManager.CanSignInAsync(user))
+        {
+            const string message = "The user is no longer allowed to sign in.";
+            var properties = OpenIDAuthService.GetAuthenticationProperties(message);
+            _logger.LogError(message);
+            return new AuthenticationResult(false, message, properties);
+        }
+
+        var identity = new ClaimsIdentity(result.Principal.Claims,
+            authenticationType: TokenValidationParameters.DefaultAuthenticationType,
+            nameType: Claims.Name,
+            roleType: Claims.Role);
+
+        // Override the user claims present in the principal in case they
+        // changed since the authorization code/refresh token was issued.
+        identity.SetClaim(Claims.Subject, await _userManager.GetUserIdAsync(user))
+                .SetClaim(Claims.Email, await _userManager.GetEmailAsync(user))
+                .SetClaim(Claims.Name, await _userManager.GetUserNameAsync(user))
+                .SetClaims(Claims.Role, (await _userManager.GetRolesAsync(user)).ToImmutableArray());
+
+        identity.SetDestinations(OpenIDAuthService.GetDestinations);
+
+        var principal = new ClaimsPrincipal(identity);
+
+        principal.SetScopes(request.GetScopes());
+
+        return new AuthenticationResult(true, "Authentication Succeeded", new ClaimsPrincipal(identity));
+    }
 
 
     private bool ValidatePkce(string codeChallenge, string codeChallengeMethod, string codeVerifier)

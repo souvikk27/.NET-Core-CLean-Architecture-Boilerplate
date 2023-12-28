@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;
 using System.Collections.Immutable;
+using System.Net.Http;
 using System.Security.Claims;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
@@ -79,4 +80,55 @@ public static class OpenIDAuthService
                 yield break;
         }
     }
+
+    public static ChallengeCodeCredentials ExtractFromUrl(string url)
+    {
+        // Parse the URL
+        Uri uri = new Uri(url);
+
+        // Extract components
+        string clientId = GetQueryParamValue(uri, "client_id");
+        string clientSecret = GetQueryParamValue(uri, "client_secret");
+        string responseType = GetQueryParamValue(uri, "response_type");
+        string codeChallenge = GetQueryParamValue(uri, "code_challenge");
+
+        return new OpenIDAuthService.ChallengeCodeCredentials
+        {
+            ClientId = clientId,
+            ClientSecret = clientSecret,
+            ResponseType = responseType,
+            CodeChallenge = codeChallenge
+        };
+    }
+
+    private static string GetQueryParamValue(Uri uri, string paramName)
+    {
+        string query = uri.Query.TrimStart('?');
+        string[] queryParams = query.Split('&');
+
+        foreach (string param in queryParams)
+        {
+            string[] keyValue = param.Split('=');
+
+            if (keyValue.Length == 2 && keyValue[0] == paramName)
+            {
+                return keyValue[1];
+            }
+        }
+
+        return null; // Parameter not found
+    }
+
+
+    public class ChallengeCodeCredentials
+    {
+        public string ClientId { get; set; }
+        public string ClientSecret { get; set; }
+        public string ResponseType { get; set; }
+        public string Code { get; set; }
+        public string CodeChallenge { get; set; }
+        public string CodeChallengeMethod { get; set; }
+    }
+
+
 }

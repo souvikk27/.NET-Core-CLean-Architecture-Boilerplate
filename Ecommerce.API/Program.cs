@@ -16,6 +16,7 @@ builder.Services.AddScoped<ValidationFilterAttribute>();
 builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
 builder.Services.AddMappingConfig();
+builder.Services.InvokeAuthentication();
 builder.Services.ConfigureOpenIddict();
 builder.Services.ConfigureHostedservice();
 builder.Services.ConfigureQuartz();
