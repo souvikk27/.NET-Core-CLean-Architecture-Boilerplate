@@ -8,6 +8,7 @@ using System.Text;
 using System.Security.Cryptography;
 using System.Collections.Immutable;
 using Azure.Core;
+using Ecommerce.Service.Context;
 namespace Ecommerce.OpenAPI.Auth.Services;
 
 public class AuthenticationService : IAuthenticationService
@@ -16,14 +17,16 @@ public class AuthenticationService : IAuthenticationService
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly ILoggerManager _logger;
     private readonly IOpenIddictApplicationManager _applicationManager;
+    private readonly ApplicationContext _context;
 
     public AuthenticationService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager,
-        ILoggerManager logger, IOpenIddictApplicationManager applicationManager)
+        ILoggerManager logger, IOpenIddictApplicationManager applicationManager, ApplicationContext context)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _logger = logger;
         _applicationManager = applicationManager;
+        _context = context;
     }
 
 
@@ -105,8 +108,21 @@ public class AuthenticationService : IAuthenticationService
             return new AuthenticationResult(false, message, properties);
         }
 
-        var identity = new ClaimsIdentity(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
-        identity.AddClaim(OpenIddictConstants.Claims.Subject, request.ClientId);
+        var userId = _context.OAuthClient
+            .Where(x => x.Clientid == request.ClientId)
+            .Select(x => x.UserId)
+            .FirstOrDefault();
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            const string message = "The specified user doesn't exist.";
+            var properties = OpenIDAuthService.GetAuthenticationProperties(message);
+            _logger.LogError(message);
+            return new AuthenticationResult(false, message, properties);
+        }
+
+        var identity = await OpenIDAuthService.CreateClaimsIdentity(request, user, _userManager);
+        identity.AddClaim(OpenIddictConstants.Claims.Subject, user.Id);
         var principal = new ClaimsPrincipal(identity);
 
         principal.SetScopes(request.GetScopes());

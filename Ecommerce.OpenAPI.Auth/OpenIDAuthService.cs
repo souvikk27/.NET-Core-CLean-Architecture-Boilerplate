@@ -38,7 +38,6 @@ public static class OpenIDAuthService
             .SetClaims(Claims.Role, (await _userManager.GetRolesAsync(user)).ToImmutableArray());
 
         identity.SetScopes(request.GetScopes());
-        //identity.SetScopes(Scopes.OfflineAccess);
         identity.SetDestinations(GetDestinations);
 
         return identity;

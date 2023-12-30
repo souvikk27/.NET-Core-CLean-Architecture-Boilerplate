@@ -1,11 +1,8 @@
 ﻿using Ecommerce.OpenAPI.Auth.AuthEntity;
-using Ecommerce.OpenAPI.Auth.Services;
-using Ecommerce.Presentation.Static;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.FileProviders;
+using OpenIddict.Client.AspNetCore;
 using RestSharp;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
@@ -91,13 +88,14 @@ namespace Ecommerce.Presentation.Controller
                     ClientId = client.Clientid,
                     ClientSecret = client.Clientsecret,
                     ConsentType = ConsentTypes.Explicit,
+                    DisplayName = "Ecommerce client application",
                     PostLogoutRedirectUris =
                     {
-                        new Uri("https://localhost:7219/signout-callback-oidc")
+                        new Uri("https://localhost:7219/callback/logout/local")
                     },
                     RedirectUris =
                     {
-                        new Uri("https://localhost:7219/signin-oidc")
+                        new Uri("https://localhost:7219/callback/login/local")
                     },
                     Permissions =
                     {
@@ -137,7 +135,20 @@ namespace Ecommerce.Presentation.Controller
             return ApiResponseExtension.ToSuccessApiResult(client);
         }
 
-
+        [HttpPost]
+        [AllowAnonymous]
+        [Route("login")]
+        [Consumes("application/x-www-form-urlencoded")]
+        public async Task<IActionResult> Login(string? returnUrl = null)
+        {
+            var properties = new AuthenticationProperties
+            {
+                // Only allow local return URLs to prevent open redirect attacks.
+                RedirectUri = Url.IsLocalUrl(returnUrl) ? returnUrl : "/"
+            };
+            // Ask the OpenIddict client middleware to redirect the user agent to the identity provider.
+            return await Task.FromResult<IActionResult>(Challenge(properties, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme));
+        }
 
         [HttpPost]
         [Route("token")]
