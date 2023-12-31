@@ -1,11 +1,14 @@
 ﻿using Ecommerce.OpenAPI.Auth;
 using Ecommerce.OpenAPI.Auth.AuthEntity;
 using Ecommerce.Presentation.Extensions;
+using Ecommerce.Presentation.Static;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using OpenIddict.Client.AspNetCore;
@@ -20,8 +23,6 @@ using IAuthenticationService = Ecommerce.OpenAPI.Auth.Abstraction.IAuthenticatio
 
 namespace Ecommerce.Presentation.Controller;
 
-[ApiController]
-[Route("api/v1/oAuth2")]
 
 public class OpenIdController : ControllerBase
 {
@@ -52,17 +53,39 @@ public class OpenIdController : ControllerBase
         throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
 
         var result = await HttpContext.AuthenticateAsync();
-
-        if (!result.Succeeded)
+        if (result == null || !result.Succeeded || request.HasPrompt(Prompts.Login) ||
+           (request.MaxAge != null && result.Properties?.IssuedUtc != null &&
+            DateTimeOffset.UtcNow - result.Properties.IssuedUtc > TimeSpan.FromSeconds(request.MaxAge.Value)))
         {
+            // If the client application requested promptless authentication,
+            // return an error indicating that the user is not logged in.
+            if (request.HasPrompt(Prompts.None))
+            {
+                return Forbid(
+                    authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
+                    properties: new AuthenticationProperties(new Dictionary<string, string>
+                    {
+                        [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.LoginRequired,
+                        [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "The user is not logged in."
+                    }));
+            }
 
-            return Challenge(
-                authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
-                properties: new AuthenticationProperties
-                {
-                    RedirectUri = Request.Path + QueryString.Create(
-                        Request.HasFormContentType ? Request.Form.ToList() : Request.Query.ToList())
-                });
+            // To avoid endless login -> authorization redirects, the prompt=login flag
+            // is removed from the authorization request payload before redirecting the user.
+            var prompt = string.Join(" ", request.GetPrompts().Remove(Prompts.Login));
+
+            var parameters = Request.HasFormContentType ?
+                Request.Form.Where(parameter => parameter.Key != Parameters.Prompt).ToList() :
+                Request.Query.Where(parameter => parameter.Key != Parameters.Prompt).ToList();
+
+            parameters.Add(KeyValuePair.Create(Parameters.Prompt, new StringValues(prompt)));
+
+            // For scenarios where the default challenge handler configured in the ASP.NET Core
+            // authentication options shouldn't be used, a specific scheme can be specified here.
+            return Challenge(new AuthenticationProperties
+            {
+                RedirectUri = Request.PathBase + Request.Path + QueryString.Create(parameters)
+            });
         }
 
         var user = await _userManager.GetUserAsync(result.Principal) ??
@@ -77,6 +100,7 @@ public class OpenIdController : ControllerBase
             status: Statuses.Valid,
             type: AuthorizationTypes.Permanent,
             scopes: request.GetScopes()).ToListAsync();
+            
 
         switch (await _applicationManager.GetConsentTypeAsync(application))
         {
@@ -220,6 +244,7 @@ public class OpenIdController : ControllerBase
         // Returning a SignInResult will ask OpenIddict to issue the appropriate access/identity tokens.
         return SignIn(new ClaimsPrincipal(identity), OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
     }
+
 
     [Authorize, FormValueRequired("submit.Deny")]
     [HttpPost("~/connect/authorize"), ValidateAntiForgeryToken]

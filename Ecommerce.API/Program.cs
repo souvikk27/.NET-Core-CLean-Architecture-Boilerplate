@@ -57,6 +57,9 @@ app.UseCors("AllowAllOrigins");
 
 
 app.MapControllers();
+app.MapDefaultControllerRoute();
+
+
 
 app.Run();
 

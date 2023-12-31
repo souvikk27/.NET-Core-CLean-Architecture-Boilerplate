@@ -135,20 +135,7 @@ namespace Ecommerce.Presentation.Controller
             return ApiResponseExtension.ToSuccessApiResult(client);
         }
 
-        [HttpPost]
-        [AllowAnonymous]
-        [Route("login")]
-        [Consumes("application/x-www-form-urlencoded")]
-        public async Task<IActionResult> Login(string? returnUrl = null)
-        {
-            var properties = new AuthenticationProperties
-            {
-                // Only allow local return URLs to prevent open redirect attacks.
-                RedirectUri = Url.IsLocalUrl(returnUrl) ? returnUrl : "/"
-            };
-            // Ask the OpenIddict client middleware to redirect the user agent to the identity provider.
-            return await Task.FromResult<IActionResult>(Challenge(properties, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme));
-        }
+        
 
         [HttpPost]
         [Route("token")]

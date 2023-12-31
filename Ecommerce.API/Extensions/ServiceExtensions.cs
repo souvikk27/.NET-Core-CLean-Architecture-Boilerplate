@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
+using OpenIddict.Client;
 using OpenIddict.EntityFrameworkCore;
 using OpenIddict.Validation.AspNetCore;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace Ecommerce.API.Extensions
 {
@@ -102,6 +104,41 @@ namespace Ecommerce.API.Extensions
                     options.UseQuartz()
                             .SetMinimumTokenLifespan(TimeSpan.FromHours(1))
                             .SetMaximumRefireCount(3);
+                })
+                .AddClient(options =>
+                {
+                    options.AllowAuthorizationCodeFlow();
+
+                    options.UseAspNetCore()
+                       .EnableStatusCodePagesIntegration()
+                       .EnableRedirectionEndpointPassthrough();
+
+                    options
+                        .AddEphemeralEncryptionKey()
+                        .AddEphemeralSigningKey();
+
+                    options.UseSystemNetHttp().SetProductInformation(typeof(Program).Assembly);
+                    options.UseWebProviders();
+                    options.Configure(options =>
+                    {
+                        options.GrantTypes.Add(GrantTypes.AuthorizationCode);
+                        options.RedirectionEndpointUris.Add(new Uri("https://localhost:7219/callback/login/local", UriKind.Absolute));
+            
+                        options.PostLogoutRedirectionEndpointUris.Add(new Uri("https://localhost:7219/callback/logout/local", UriKind.Absolute));
+                    });
+
+                    options.AddRegistration(new OpenIddictClientRegistration
+                    {
+                        Issuer = new Uri("https://localhost:7219/", UriKind.Absolute),
+
+                        // Note: to mitigate mix-up attacks, it's recommended to use a unique redirection endpoint
+                        // URI per provider, unless all the registered providers support returning a special "iss"
+                        // parameter containing their URL as part of authorization responses. For more information,
+                        // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
+                        RedirectUri = new Uri("callback/login/local", UriKind.Relative),
+                        PostLogoutRedirectUri = new Uri("callback/logout/local", UriKind.Relative)
+                    });
+
                 })
                 .AddServer(options =>
                 {
