@@ -11,16 +11,11 @@ namespace Ecommerce.Domain.Entities
     {
         [Key]
         public Guid Id { get; set; }
-
-        [Required(ErrorMessage = "Category name is required")] 
-        public string Name { get; set; }
-
-        [Required]
-        public DateTime AddedOn { get; set; }
-
-        public DateTime? ModifiedOn { get; set;}
-
-        public DateTime? DeletedOn { get; set; }
-
+        public Guid? ParentId { get; set; }
+        public string CategoryName { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set;}
+        public DateTime? DeletedAt { get; set; }
+        public Category ParentCategory { get; set; }
     }
 }
