@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
+
 
 namespace Ecommerce.Domain.Entities
 {
@@ -17,5 +13,6 @@ namespace Ecommerce.Domain.Entities
         public DateTime? UpdatedAt { get; set;}
         public DateTime? DeletedAt { get; set; }
         public Category ParentCategory { get; set; }
+        public ICollection<ProductCategory> ProductCategories { get; set; }
     }
 }

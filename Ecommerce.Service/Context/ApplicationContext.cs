@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using OpenIddict.EntityFrameworkCore.Models;
 using System.Reflection.Emit;
+
 
 namespace Ecommerce.Service.Context;
 
@@ -67,6 +67,57 @@ public class ApplicationContext : IdentityDbContext<ApplicationUser, IdentityRol
            .WithMany(u => u.OAuthClient)
            .HasForeignKey(o => o.UserId)
            .IsRequired();
+
+        builder.Entity<ProductCategory>()
+        .HasKey(pc => new { pc.ProductId, pc.CategoryId });
+
+        builder.Entity<ProductCategory>()
+            .HasOne(pc => pc.Product)
+            .WithMany(p => p.ProductCategories)
+            .HasForeignKey(pc => pc.ProductId);
+
+        builder.Entity<ProductCategory>()
+            .HasOne(pc => pc.Category)
+            .WithMany(c => c.ProductCategories)
+            .HasForeignKey(pc => pc.CategoryId);
+
+        builder.Entity<Product>()
+            .HasOne(p => p.Discount)
+            .WithMany()
+            .HasForeignKey(p => p.DiscountId);
+
+        builder.Entity<Product>()
+            .HasOne(p => p.Inventory)
+            .WithMany()
+            .HasForeignKey(p => p.InventoryId);
+
+        builder.Entity<OrderDetails>()
+            .HasOne(od => od.Payment)
+            .WithOne(p => p.OrderDetails)
+            .HasForeignKey<OrderDetails>(od => od.PaymentId);
+
+        builder.Entity<OrderDetails>()
+            .HasOne(od => od.User)
+            .WithMany(u => u.Orders)
+            .HasForeignKey(od => od.UserId);
+
+        builder.Entity<OrderDetails>()
+            .HasOne(od => od.OrderPayment)
+            .WithOne(op => op.OrderDetails)
+            .HasForeignKey<OrderPayment>(op => op.Orderid);
+
+        builder.Entity<ShoppingSession>()
+            .HasOne(ss => ss.User)
+            .WithMany(u => u.ShoppingSessions)
+            .HasForeignKey(ss => ss.UserId);
+
+        builder.Entity<ApplicationUser>()
+            .HasMany(u => u.ShoppingSessions)
+            .WithOne(ss => ss.User)
+            .HasForeignKey(ss => ss.UserId);
+
+        builder.Entity<CartProduct>()
+        .HasKey(cp => new { cp.CartId, cp.ProductId });
     }
     
 }

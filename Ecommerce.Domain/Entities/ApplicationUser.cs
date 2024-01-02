@@ -15,6 +15,10 @@ namespace Ecommerce.Domain.Entities
 
         [JsonIgnore]
         public ICollection<OAuthClient> OAuthClient { get; set; }
+        [JsonIgnore]
+        public ICollection<OrderDetails>? Orders { get; set; }
+        [JsonIgnore]
+        public ICollection<ShoppingSession>? ShoppingSessions { get; set; }
     }
 
 }
