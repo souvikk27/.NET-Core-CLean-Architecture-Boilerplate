@@ -19,5 +19,9 @@ namespace Ecommerce.Domain.Entities
         public DateTime AddedOn { get; set; }
 
         public DateTime? ModifiedOn { get; set; }
+
+        public ShoppingCart Cart { get; set; }
+
+        public Product Product { get; set; }
     }
 }

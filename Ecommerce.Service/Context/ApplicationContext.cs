@@ -17,9 +17,21 @@ public class ApplicationContext : IdentityDbContext<ApplicationUser, IdentityRol
 
     public virtual DbSet<Category> Category { get; set; }
 
+    public virtual DbSet<OrderDetails> Orders { get; set; }
+
+    public virtual DbSet<ShoppingCart> Cart { get; set; }
+
+    public virtual DbSet<ShoppingSession> Session { get; set; }
+
+    public virtual DbSet<Payment> Payment { get; set; }
+
+    public virtual DbSet<OrderPayment> OrderPayment { get; set; }
+
     public DbSet<ApplicationUser> User { get; set; }
 
     public virtual DbSet<OAuthClient> OAuthClient { get; set; }
+
+    public virtual DbSet<ProductCategory> ProductCategory { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -118,6 +130,16 @@ public class ApplicationContext : IdentityDbContext<ApplicationUser, IdentityRol
 
         builder.Entity<CartProduct>()
         .HasKey(cp => new { cp.CartId, cp.ProductId });
+
+        builder.Entity<CartProduct>()
+            .HasOne(cp => cp.Cart)
+            .WithMany(c => c.CartProducts)
+            .HasForeignKey(cp => cp.CartId);
+
+        builder.Entity<CartProduct>()
+            .HasOne(cp => cp.Product)
+            .WithMany(p => p.CartProducts)
+            .HasForeignKey(cp => cp.ProductId);
     }
     
 }
