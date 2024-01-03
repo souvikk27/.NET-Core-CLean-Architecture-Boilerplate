@@ -11,13 +11,13 @@ using System.Threading.Tasks;
 
 namespace Ecommerce.Service
 {
-    public class CategoryRepository : RepositoryBase<Category, EntityContext>
+    public class CategoryRepository : RepositoryBase<Category, ApplicationContext>
     {
-        public CategoryRepository(IRepositoryOptions<EntityContext> options) : base(options)
+        public CategoryRepository(IRepositoryOptions<ApplicationContext> options) : base(options)
         {
         }
 
-        public override Expression<Func<EntityContext, DbSet<Category>>> DataSet() => o => o.Category;
+        public override Expression<Func<ApplicationContext, DbSet<Category>>> DataSet() => o => o.Category;
         public override Expression<Func<Category, object>> Key() => o => o.Id;
     }
 }

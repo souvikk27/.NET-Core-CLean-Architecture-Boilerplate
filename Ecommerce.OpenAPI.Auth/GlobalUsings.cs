@@ -1,0 +1,9 @@
+﻿global using Ecommerce.Domain.Entities;
+global using Ecommerce.LoggerService;
+global using Ecommerce.Service.Extensions;
+global using Microsoft.AspNetCore.Authentication;
+global using Microsoft.AspNetCore.Http;
+global using Microsoft.AspNetCore.Identity;
+global using Microsoft.AspNetCore.Mvc;
+global using OpenIddict.Abstractions;
+global using OpenIddict.Server.AspNetCore;

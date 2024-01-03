@@ -1,40 +1,21 @@
-﻿using Ecommerce.Service.Context;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
+﻿using Microsoft.EntityFrameworkCore.Design;
 
 namespace Ecommerce.API.ContextFactory
 {
-    public class DataContextFactory : IDesignTimeDbContextFactory<DataContext>
+    public class ApplicationContextFactory : IDesignTimeDbContextFactory<ApplicationContext>
     {
-        public DataContext CreateDbContext(string[] args)
+        public ApplicationContext CreateDbContext(string[] args)
         {
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json")
                 .Build();
-
-            var builder = new DbContextOptionsBuilder<DataContext>();
+            var builder = new DbContextOptionsBuilder<ApplicationContext>();
             builder.UseSqlServer(configuration.GetConnectionString("SqlConnection"),
                 b => b.MigrationsAssembly("Ecommerce.API"));
+            builder.UseOpenIddict();
 
-            return new DataContext(builder.Options);
-        }
-    }
-
-    public class EntityContextFactory : IDesignTimeDbContextFactory<EntityContext>
-    {
-        public EntityContext CreateDbContext(string[] args)
-        {
-            var configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json")
-                .Build();
-
-            var builder = new DbContextOptionsBuilder<EntityContext>();
-            builder.UseSqlServer(configuration.GetConnectionString("SqlConnection"),
-                b => b.MigrationsAssembly("Ecommerce.API"));
-
-            return new EntityContext(builder.Options);
+            return new ApplicationContext(builder.Options);
         }
     }
 }

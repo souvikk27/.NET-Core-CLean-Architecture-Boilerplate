@@ -1,20 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Ecommerce.Domain.Entities;
-using Ecommerce.LoggerService;
-using Ecommerce.Service;
-using Ecommerce.Service.Abstraction;
-using Ecommerce.Service.Context;
-using Ecommerce.Service.Contract.Generators;
-using Ecommerce.Service.Seeding;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using OpenIddict.Abstractions;
+using OpenIddict.Client;
+using OpenIddict.EntityFrameworkCore;
+using OpenIddict.Validation.AspNetCore;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace Ecommerce.API.Extensions
 {
@@ -60,36 +50,156 @@ namespace Ecommerce.API.Extensions
                         new string[]{}
                     }
                 });
-                c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First()); //This line
-            });
-        }
-
-        public static void ConfigureJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
-        {
-            services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(options =>
-            {
-                options.SaveToken = true;
-                options.RequireHttpsMetadata = false;
-                options.TokenValidationParameters = new TokenValidationParameters()
+                c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First()); //This line is needed because of the following code in the assembly
+                c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
                 {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidAudience = configuration["JWT:ValidAudience"],
-                    ValidIssuer = configuration["JWT:ValidIssuer"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]))
-                };
+                    Type = SecuritySchemeType.OAuth2,
+                    Flows = new OpenApiOAuthFlows
+                    {
+                        AuthorizationCode = new OpenApiOAuthFlow
+                        {
+                            AuthorizationUrl = new Uri("/connect/authorize", UriKind.Relative),
+                            TokenUrl = new Uri("/connect/token", UriKind.Relative),
+                            Scopes = new Dictionary<string, string>
+                            {
+                                {"openid", "OpenID"},
+                                {"profile", "Profile"},
+                            }
+                        }
+                    }
+                });
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "openid"
+                            }
+                        },
+                        new string[] {}
+                    }
+                });
             });
         }
 
+        public static void InvokeAuthentication(this IServiceCollection services)
+        {
+            services.AddAuthentication(config =>
+            {
+                config.DefaultChallengeScheme = OpenIddictServerAspNetCoreDefaults.AuthenticationScheme;
+                config.DefaultAuthenticateScheme = OpenIddictServerAspNetCoreDefaults.AuthenticationScheme;
+            });
+        }
 
+        public static void ConfigureOpenIddict(this IServiceCollection services)
+        {
+            services.AddOpenIddict()
+                .AddCore(options =>
+                {
+                    options.UseEntityFrameworkCore()
+                        .UseDbContext<ApplicationContext>();
+                    options.UseQuartz()
+                            .SetMinimumTokenLifespan(TimeSpan.FromHours(1))
+                            .SetMaximumRefireCount(3);
+                })
+                .AddClient(options =>
+                {
+                    options.AllowAuthorizationCodeFlow();
 
+                    options.UseAspNetCore()
+                       .EnableStatusCodePagesIntegration()
+                       .EnableRedirectionEndpointPassthrough();
+
+                    options
+                        .AddEphemeralEncryptionKey()
+                        .AddEphemeralSigningKey();
+
+                    options.UseSystemNetHttp().SetProductInformation(typeof(Program).Assembly);
+                    options.UseWebProviders();
+                    options.Configure(options =>
+                    {
+                        options.GrantTypes.Add(GrantTypes.AuthorizationCode);
+                        options.RedirectionEndpointUris.Add(new Uri("https://localhost:7219/callback/login/local", UriKind.Absolute));
+            
+                        options.PostLogoutRedirectionEndpointUris.Add(new Uri("https://localhost:7219/callback/logout/local", UriKind.Absolute));
+                    });
+
+                    options.AddRegistration(new OpenIddictClientRegistration
+                    {
+                        Issuer = new Uri("https://localhost:7219/", UriKind.Absolute),
+
+                        // Note: to mitigate mix-up attacks, it's recommended to use a unique redirection endpoint
+                        // URI per provider, unless all the registered providers support returning a special "iss"
+                        // parameter containing their URL as part of authorization responses. For more information,
+                        // see https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics#section-4.4.
+                        RedirectUri = new Uri("callback/login/local", UriKind.Relative),
+                        PostLogoutRedirectUri = new Uri("callback/logout/local", UriKind.Relative)
+                    });
+
+                })
+                .AddServer(options =>
+                {
+                    options.SetIssuer(new Uri("https://localhost/7129"));
+
+                    options.SetAuthorizationEndpointUris("connect/authorize")
+                        .SetLogoutEndpointUris("connect/logout")
+                        .SetIntrospectionEndpointUris("/connect/introspect")
+                        .SetTokenEndpointUris("/connect/token")
+                        .SetUserinfoEndpointUris("/connect/userinfo")
+                        .SetVerificationEndpointUris("/connect/verify");
+                    
+                    options.AllowPasswordFlow()
+                           .AllowRefreshTokenFlow()
+                           .AllowHybridFlow()
+                           .AllowClientCredentialsFlow()
+                           .AllowAuthorizationCodeFlow();
+
+                    options.SetRefreshTokenLifetime(null).DisableRollingRefreshTokens();
+
+                    options.RequireProofKeyForCodeExchange();
+
+                    options.AllowClientCredentialsFlow()
+                    .AllowRefreshTokenFlow();
+
+                    options.AcceptAnonymousClients();
+
+                    options.AddDevelopmentEncryptionCertificate()
+                    .AddDevelopmentSigningCertificate();
+                    
+                    options.DisableAccessTokenEncryption();
+                    
+                    options
+                        .AddEphemeralEncryptionKey()
+                        .AddEphemeralSigningKey();
+
+                    options.RegisterScopes("api");
+
+                    options.UseAspNetCore()
+                        .EnableStatusCodePagesIntegration()
+                        .EnableAuthorizationEndpointPassthrough()
+                        .EnableLogoutEndpointPassthrough()
+                        .EnableAuthorizationEndpointPassthrough()
+                        .EnableTokenEndpointPassthrough()
+                        .EnableUserinfoEndpointPassthrough()
+                        .EnableVerificationEndpointPassthrough();
+                })
+                 .AddValidation(options =>
+                 {
+                     options.UseLocalServer();
+                     options.EnableAuthorizationEntryValidation();
+                     options.UseAspNetCore();
+                 });
+        }
+
+        public static void ConfigureStaticRednering(this IServiceCollection services)
+        {
+            services.AddRazorPages();
+            services.AddRazorComponents();
+        }
+        
         public static void ConfigureCors(this IServiceCollection services) =>
             services.AddCors(options =>
             {
@@ -99,16 +209,16 @@ namespace Ecommerce.API.Extensions
                 .AllowAnyHeader());
             });
 
-
         public static void ConfigureIdentity(this IServiceCollection services)
         {
             services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
                 options.SignIn.RequireConfirmedAccount = true;
                 options.ClaimsIdentity.UserIdClaimType = "UserId";
-            }).AddEntityFrameworkStores<DataContext>().AddDefaultTokenProviders();
+            }).AddEntityFrameworkStores<ApplicationContext>().AddDefaultTokenProviders();
 
-            services.Configure<IdentityOptions>(options =>{
+            services.Configure<IdentityOptions>(options =>
+            {
                 options.Password.RequiredLength = 8;
                 options.Password.RequireLowercase = true;
                 options.Password.RequireUppercase = true;
@@ -116,20 +226,35 @@ namespace Ecommerce.API.Extensions
         }
 
         public static void ConfigureSqlContext(this IServiceCollection services, IConfiguration configuration) =>
-            services.AddDbContext<DataContext>(option =>
-                option.UseSqlServer(configuration.GetConnectionString("SqlConnection")));
-
-        public static void ConfigureEntityContext(this IServiceCollection services, IConfiguration configuration) =>
-            services.AddDbContext<EntityContext>(option =>
-                option.UseSqlServer(configuration.GetConnectionString("SqlConnection")));
+            services.AddDbContext<ApplicationContext>(option =>
+            {
+                option.UseSqlServer(configuration.GetConnectionString("SqlConnection"));
+                option.UseOpenIddict();
+            });
 
         public static void ConfigureLogging(this IServiceCollection services) => 
             services.AddSingleton<ILoggerManager, LoggerManager>();
 
-        public static void ConfigureDbSeed(this IServiceCollection services) =>
-            services.AddScoped<IContextSeed, ContextSeed>();
+        public static void ConfigureHostedservice(this IServiceCollection services) => services.AddHostedService<Worker>();
 
-        public static void ConfigureTokenGeneration(this IServiceCollection services) =>
-            services.AddSingleton<TokenGenerator>();
+        public static void ConfigureQuartz(this IServiceCollection services)
+        {
+            services.AddQuartz(options =>
+            {
+                options.UseMicrosoftDependencyInjectionJobFactory();
+                options.UseSimpleTypeLoader();
+                options.UseInMemoryStore();
+            });
+
+            services.AddQuartzHostedService(options => options.WaitForJobsToComplete = true);
+        }
+
+        public static void InvokeOauthClient(this IServiceCollection services) => 
+            services.AddTransient<IClientCredentialService, ClientCredentialService>();
+
+        public static void TriggerOpenIdAuthentication(this IServiceCollection services)
+        {
+            services.AddScoped<IAuthenticationService, AuthenticationService>();
+        }
     }
 }

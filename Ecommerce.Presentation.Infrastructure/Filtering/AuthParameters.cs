@@ -9,13 +9,13 @@ namespace Ecommerce.Presentation.Infrastructure.Filtering
 {
     public class AuthParameters
     {
+        [Required(ErrorMessage = "Grant Type is required")]
+        public string grant_type  { get; set; }
+        
         [Required(ErrorMessage = "Client Id is Required")]
-        public string Client_ID { get; set; }
+        public string client_ID { get; set; }
 
         [Required(ErrorMessage = "Client Secret is Required")]
-        public string Client_Secret { get; set; }
-
-        [Required(ErrorMessage = "Refresh Token is Required")]
-        public string Refresh_Token { get; set; }
+        public string client_Secret { get; set; }
     }
 }

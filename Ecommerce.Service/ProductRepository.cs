@@ -13,13 +13,13 @@ using Microsoft.Extensions.Configuration;
 
 namespace Ecommerce.Service
 {
-    public class ProductRepository : RepositoryBase<Product, EntityContext>,IProductRepository
+    public class ProductRepository : RepositoryBase<Product, ApplicationContext>,IProductRepository
     {
-        public ProductRepository(IRepositoryOptions<EntityContext> options) : base(options)
+        public ProductRepository(IRepositoryOptions<ApplicationContext> options) : base(options)
         {
         }
 
-        public override Expression<Func<EntityContext, DbSet<Product>>> DataSet() => o => o.Product;
+        public override Expression<Func<ApplicationContext, DbSet<Product>>> DataSet() => o => o.Product;
         public override Expression<Func<Product, object>> Key() => o => o.Id;
     }
 }

@@ -1,4 +1,4 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
@@ -18,6 +18,13 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ecommerce.Presentation.Infrastructure", "Ecommerce.Presentation.Infrastructure\Ecommerce.Presentation.Infrastructure.csproj", "{45830102-0222-4650-B747-8C03BC740008}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ecommerce.Service.Contract", "Ecommerce.Service.Contract\Ecommerce.Service.Contract.csproj", "{656B5B59-6D5C-4C25-8D2C-61C7FDB4B5F1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ecommerce.OpenAPI.Auth", "Ecommerce.OpenAPI.Auth\Ecommerce.OpenAPI.Auth.csproj", "{0F3255E4-E30A-4FA9-B96B-7B4C56DCB4D5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{235C6566-AAB3-43F7-9DF8-FFCAC5888B8E}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +64,10 @@ Global
 		{656B5B59-6D5C-4C25-8D2C-61C7FDB4B5F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{656B5B59-6D5C-4C25-8D2C-61C7FDB4B5F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{656B5B59-6D5C-4C25-8D2C-61C7FDB4B5F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F3255E4-E30A-4FA9-B96B-7B4C56DCB4D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F3255E4-E30A-4FA9-B96B-7B4C56DCB4D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F3255E4-E30A-4FA9-B96B-7B4C56DCB4D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F3255E4-E30A-4FA9-B96B-7B4C56DCB4D5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

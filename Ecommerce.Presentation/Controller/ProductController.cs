@@ -15,6 +15,7 @@ using Ecommerce.Presentation.Infrastructure.Filtering;
 using Ecommerce.Presentation.Infrastructure.Utils;
 using Ecommerce.Presentation.Infrastructure.Extensions;
 using Ecommerce.Service.Abstraction;
+using Mapster;
 
 namespace Ecommerce.Presentation.Controller
 {
@@ -31,27 +32,27 @@ namespace Ecommerce.Presentation.Controller
         }
 
 
-        [HttpGet]
-        public IActionResult GetProducts([FromQuery] ProductsParameters parameters)
-        {
-            var page = parameters.PageNumber;
-            var pageSize = parameters.PageSize;
-            var skipCount = (page - 1) * pageSize;
+        //[HttpGet]
+        //public IActionResult GetProducts([FromQuery] ProductsParameters parameters)
+        //{
+        //    var page = parameters.PageNumber;
+        //    var pageSize = parameters.PageSize;
+        //    var skipCount = (page - 1) * pageSize;
 
-            var filteredProducts = repository.GetAll()
-                                   .Where(product =>
-                                    (parameters.MinPrice <= product.Price) &&
-                                    (parameters.MaxPrice >= product.Price) &&
-                                    (parameters.AddedOn == DateTime.MinValue || parameters.AddedOn == product.AddedOn) &&
-                                    (string.IsNullOrEmpty(parameters.Sku) || parameters.Sku == product.SKU))
-                                    .ToList();
-            var totalItemCount = filteredProducts.Count;
+        //    var filteredProducts = repository.GetAll()
+        //                           .Where(product =>
+        //                            (parameters.MinPrice <= product.Price) &&
+        //                            (parameters.MaxPrice >= product.Price) &&
+        //                            (parameters.AddedOn == DateTime.MinValue || parameters.AddedOn == product.AddedOn) &&
+        //                            (string.IsNullOrEmpty(parameters.Sku) || parameters.Sku == product.SKU))
+        //                            .ToList();
+        //    var totalItemCount = filteredProducts.Count;
 
-            var metadata = new MetaData().Initialize(page, pageSize, totalItemCount);
-            metadata.AddResponseHeaders(Response);
-            var pagedList = PagedList<Product>.ToPagedList(filteredProducts, page, pageSize);
-            return Ok(pagedList);
-        }
+        //    var metadata = new MetaData().Initialize(page, pageSize, totalItemCount);
+        //    metadata.AddResponseHeaders(Response);
+        //    var pagedList = PagedList<Product>.ToPagedList(filteredProducts, page, pageSize);
+        //    return Ok(pagedList);
+        //}
 
 
         [HttpGet("{id}")]
@@ -66,7 +67,7 @@ namespace Ecommerce.Presentation.Controller
         [ServiceFilter(typeof(ValidationFilterAttribute))]
         public IActionResult AddProduct([FromBody] ProductDto dto)
         {
-            var product = dto.MaptoProduct();
+            var product = dto.Adapt<Product>();
             var rtval = repository.Add(product);
             repository.Save();
             return ApiResponseExtension.ToSuccessApiResult(rtval);
@@ -77,7 +78,7 @@ namespace Ecommerce.Presentation.Controller
         [ServiceFilter(typeof(ValidationFilterAttribute))]
         public IActionResult UpdateProduct([FromBody] ProductDto dto)
         {
-            var product = dto.MaptoProduct();
+            var product = dto.Adapt<Product>();
             var rtval = repository.Update(product);
             repository.Save();
             return ApiResponseExtension.ToSuccessApiResult(rtval, "Product updated successfully", "204");

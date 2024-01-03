@@ -1,16 +1,10 @@
 ﻿using Ecommerce.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Security.Cryptography;
 using Ecommerce.LoggerService;
 using Microsoft.EntityFrameworkCore;
-using static Ecommerce.Service.Contract.Generators.TokenGenerator;
-using Ecommerce.Service.Contract.Generators;
-using Microsoft.Extensions.Configuration;
+using Ecommerce.Service.Context;
+
+
 #pragma warning disable SYSLIB0023
 
 namespace Ecommerce.Service
@@ -20,38 +14,30 @@ namespace Ecommerce.Service
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ILoggerManager logger;
-        private const int RandomStringLength = 32;
-        private readonly IConfiguration configuration;
+        private readonly ApplicationContext _context;
 
-        public UserRepository(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ILoggerManager logger, IConfiguration configuration)
+        public UserRepository(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, 
+            ILoggerManager logger, ApplicationContext context)
         {
             _userManager = userManager;
             _roleManager = roleManager;
+            _context = context;
             this.logger = logger;
-            this.configuration = configuration;
         }
 
-        public async Task<ApplicationUser> CreateUser(ApplicationUser user, string password)
+        public async Task<ApplicationUser> CreateUser(ApplicationUser user, string password, OAuthClient client)
         {
-            var clientIdLength = 10;
-            var clientSecretLength = 15;
-            user.Client_Id = "app-api-" + GenerateRandomString(clientIdLength);
-            user.Client_Secret = "app-api-" + GenerateRandomString(clientSecretLength);
-            user.Refresh_Token = GenerateRefreshToken();
-
-            if (user.Client_Id.Length >= user.Client_Secret.Length)
-            {
-                // Adjust the length of client_id to be less than client_secret
-                user.Client_Id = "app-api-" + GenerateRandomString(clientSecretLength - 2);
-            }
             try
             {
-                var existingUser = _userManager.FindByNameAsync(user.UserName);
-                if ( existingUser.Result == null)
+                var existingUser = await _userManager.FindByNameAsync(user.UserName);
+                if ( existingUser == null)
                 {
                     var result = await _userManager.CreateAsync(user, password);
                     if (result.Succeeded)
                     {
+                        client.UserId = user.Id;
+                        await _context.OAuthClient.AddAsync(client);
+                        await _context.SaveChangesAsync();
                         return user;
                     }
                     else
@@ -66,6 +52,7 @@ namespace Ecommerce.Service
                 throw;
             }
         }
+
 
         public async Task<IEnumerable<ApplicationUser>> GetAll()
         {
@@ -84,53 +71,21 @@ namespace Ecommerce.Service
             var user = await GetById(id);
             var result = await _userManager.DeleteAsync(user);
 
-            if(user == null)
+            if (user == null)
             {
                 return new ApplicationUser();
             }
 
-            if(!result.Succeeded)
+            if (!result.Succeeded)
             {
                 throw new InvalidOperationException("Something went wrong please try again later");
             }
-
             return user;
-        }
-
-        public async Task<Token> GetTokenAsync(string clientId, string clientSecret, string refreshToken)
-        {
-            var generator = new TokenGenerator(clientId, clientSecret, refreshToken);
-            var token = await generator.GenerateAccessTokenAsync(configuration);
-            return token;
         }
 
         public bool IsValid(string clientId, string clientSecret, string refreshToken)
         {
             return false;
         }
-
-        
-        private static string GenerateRandomString(int length)
-        {
-            const string chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-            var random = new Random();
-            return new string(Enumerable.Repeat(chars, length)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
-        }
-
-        private static string GenerateRefreshToken()
-        {
-            using (var cryptoProvider = new RNGCryptoServiceProvider())
-            {
-                byte[] bytes = new byte[64];
-                cryptoProvider.GetBytes(bytes);
-
-                string secureRandomString = Convert.ToBase64String(bytes);
-
-                // Output example: Secure random string: OfGER+tSZIOSz314OlHk1aM+N8oNXDRHqTn3c5EVknYO5b5s0kqq40lJzoGj99ZXCvoFhkNG8KwQQvBPaR0FtQ==
-                return secureRandomString;
-            }
-        }
-
     }
 }
