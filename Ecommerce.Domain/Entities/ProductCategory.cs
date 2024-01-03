@@ -13,8 +13,8 @@ namespace Ecommerce.Domain.Entities
         public Guid Id { get; set; }
 
         // Foreign keys
-        public Guid ProductId { get; set; }
-        public Guid CategoryId { get; set; }
+        public Guid? ProductId { get; set; }
+        public Guid? CategoryId { get; set; }
 
         // Navigation properties
         public Product Product { get; set; }

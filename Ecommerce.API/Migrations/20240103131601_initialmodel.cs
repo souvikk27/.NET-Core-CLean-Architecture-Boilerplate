@@ -20,18 +20,11 @@ namespace Ecommerce.API.Migrations
                     CategoryName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ParentCategoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Category", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Category_Category_ParentCategoryId",
-                        column: x => x.ParentCategoryId,
-                        principalTable: "Category",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.NoAction);
                 });
 
             migrationBuilder.CreateTable(
@@ -597,11 +590,6 @@ namespace Ecommerce.API.Migrations
                 name: "IX_CartProduct_ProductId",
                 table: "CartProduct",
                 column: "ProductId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Category_ParentCategoryId",
-                table: "Category",
-                column: "ParentCategoryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OAuthClient_UserId",

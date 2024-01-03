@@ -15,28 +15,27 @@ namespace Ecommerce.Presentation.Controller
         {
             this.repository = repository;
         }
-        
 
-        //[HttpGet]
-        //[Authorize]
-        //[RateLimit(5,5)]
-        //public IActionResult GetAllCategories([FromQuery] CategoryParameters parameters)
-        //{
-        //    var page = parameters.PageNumber;
-        //    var pageSize = parameters.PageSize;
 
-        //    var filteredCategories = repository.GetAll()
-        //                             .Where(category => 
-        //                             (parameters.AddedOn == DateTime.MinValue || parameters.AddedOn == category.AddedOn) &&
-        //                             (string.IsNullOrEmpty(parameters.CategoryName) || parameters.CategoryName == category.Name))
-        //                             .ToList();
-        //    var totalItemCount = filteredCategories.Count;
-        //    var metadata = new MetaData().Initialize(page, pageSize, totalItemCount);
-        //    metadata.AddResponseHeaders(Response);
+        [HttpGet]
+        [RateLimit(5, 5)]
+        public IActionResult GetAllCategories([FromQuery] CategoryParameters parameters)
+        {
+            var page = parameters.PageNumber;
+            var pageSize = parameters.PageSize;
 
-        //    var pagedList = PagedList<Category>.ToPagedList(filteredCategories, page, pageSize);
-        //    return Ok(pagedList);
-        //}
+            var filteredCategories = repository.GetAll()
+                                     .Where(category =>
+                                     (parameters.AddedOn == DateTime.MinValue || parameters.AddedOn == category.CreatedAt) &&
+                                     (string.IsNullOrEmpty(parameters.CategoryName) || parameters.CategoryName == category.CategoryName))
+                                     .ToList();
+            var totalItemCount = filteredCategories.Count;
+            var metadata = new MetaData().Initialize(page, pageSize, totalItemCount);
+            metadata.AddResponseHeaders(Response);
+
+            var pagedList = PagedList<Category>.ToPagedList(filteredCategories, page, pageSize);
+            return Ok(pagedList);
+        }
 
 
 
@@ -60,16 +59,16 @@ namespace Ecommerce.Presentation.Controller
         }
 
 
-        //[HttpPut]
-        //[ServiceFilter(typeof(ValidationFilterAttribute))]
-        //public IActionResult UpdateCategory([FromBody] CategoryDto dto)
-        //{
-        //    var category = dto.Adapt<Category>();
-        //    category.ModifiedOn = DateTime.Now;
-        //    repository.Update(category);
-        //    repository.Save();
-        //    return ApiResponseExtension.ToSuccessApiResult(category, "Category updated successfully", "204");
-        //}
+        [HttpPut]
+        [ServiceFilter(typeof(ValidationFilterAttribute))]
+        public IActionResult UpdateCategory([FromBody] CategoryDto dto)
+        {
+            var category = dto.Adapt<Category>();
+            category.UpdatedAt = DateTime.Now;
+            repository.Update(category);
+            repository.Save();
+            return ApiResponseExtension.ToSuccessApiResult(category, "Category updated successfully", "204");
+        }
 
         [HttpDelete]
         public IActionResult DeleteCategory(Guid id)

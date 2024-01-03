@@ -133,9 +133,6 @@ namespace Ecommerce.API.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("ParentCategoryId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid?>("ParentId")
                         .HasColumnType("uniqueidentifier");
 
@@ -143,8 +140,6 @@ namespace Ecommerce.API.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ParentCategoryId");
 
                     b.ToTable("Category");
                 });
@@ -394,10 +389,10 @@ namespace Ecommerce.API.Migrations
 
             modelBuilder.Entity("Ecommerce.Domain.Entities.ProductCategory", b =>
                 {
-                    b.Property<Guid>("ProductId")
+                    b.Property<Guid?>("ProductId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("CategoryId")
+                    b.Property<Guid?>("CategoryId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("Id")
@@ -906,17 +901,6 @@ namespace Ecommerce.API.Migrations
                     b.Navigation("Cart");
 
                     b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("Ecommerce.Domain.Entities.Category", b =>
-                {
-                    b.HasOne("Ecommerce.Domain.Entities.Category", "ParentCategory")
-                        .WithMany()
-                        .HasForeignKey("ParentCategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ParentCategory");
                 });
 
             modelBuilder.Entity("Ecommerce.Domain.Entities.OAuthClient", b =>

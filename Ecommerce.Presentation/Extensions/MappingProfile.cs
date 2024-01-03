@@ -28,17 +28,17 @@ namespace Ecommerce.Presentation.Extensions
         //    return product;
         //}
 
-        //public static Category MaptoCategory(this CategoryDto dto)
-        //{
-        //    var category = new Category()
-        //    {
-        //        Id = dto.Id,
-        //        Name = dto.Name,
-        //        AddedOn = dto.AddedOn,
-        //        ModifiedOn = dto.ModifiedOn
-        //    };
-        //    return category;
-        //}
+        public static Category MaptoCategory(this CategoryDto dto)
+        {
+            var category = new Category()
+            {
+                Id = dto.Id,
+                CategoryName = dto.CategoryName,
+                ParentId = dto.ParentId,
+                CreatedAt = dto.CreatedAt
+            };
+            return category;
+        }
 
         public static ApplicationUser MaptoUser(this UserDto dto)
         {
