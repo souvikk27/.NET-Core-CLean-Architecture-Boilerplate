@@ -26,6 +26,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ecommerce.IdentityServer", "Ecommerce.IdentityServer\Ecommerce.IdentityServer.csproj", "{B48E9A6A-F1CB-4335-A9AA-5CFF7CDDAD89}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -68,6 +70,10 @@ Global
 		{0F3255E4-E30A-4FA9-B96B-7B4C56DCB4D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0F3255E4-E30A-4FA9-B96B-7B4C56DCB4D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0F3255E4-E30A-4FA9-B96B-7B4C56DCB4D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B48E9A6A-F1CB-4335-A9AA-5CFF7CDDAD89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B48E9A6A-F1CB-4335-A9AA-5CFF7CDDAD89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B48E9A6A-F1CB-4335-A9AA-5CFF7CDDAD89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B48E9A6A-F1CB-4335-A9AA-5CFF7CDDAD89}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
