@@ -14,7 +14,6 @@ global using Ecommerce.Presentation.Infrastructure.Services.Abstraction;
 global using Ecommerce.Service;
 global using Ecommerce.Service.Context;
 global using Ecommerce.Service.Contract.Generators;
-global using Ecommerce.Service.Seeding;
 global using Microsoft.AspNetCore.Identity;
 global using Microsoft.AspNetCore.Mvc.Formatters;
 global using Microsoft.EntityFrameworkCore;

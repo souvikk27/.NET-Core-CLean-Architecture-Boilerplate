@@ -235,9 +235,6 @@ namespace Ecommerce.API.Extensions
         public static void ConfigureLogging(this IServiceCollection services) => 
             services.AddSingleton<ILoggerManager, LoggerManager>();
 
-        public static void ConfigureDbSeed(this IServiceCollection services) =>
-            services.AddScoped<IContextSeed, ContextSeed>();
-
         public static void ConfigureHostedservice(this IServiceCollection services) => services.AddHostedService<Worker>();
 
         public static void ConfigureQuartz(this IServiceCollection services)

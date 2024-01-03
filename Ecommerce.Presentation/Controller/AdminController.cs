@@ -89,6 +89,7 @@ namespace Ecommerce.Presentation.Controller
                     ClientSecret = client.Clientsecret,
                     ConsentType = ConsentTypes.Explicit,
                     DisplayName = "Ecommerce client application",
+                    Type = ClientTypes.Confidential,
                     PostLogoutRedirectUris =
                     {
                         new Uri("https://localhost:7219/callback/logout/local")

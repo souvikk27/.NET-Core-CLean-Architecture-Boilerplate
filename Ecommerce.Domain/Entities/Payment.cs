@@ -17,5 +17,6 @@ namespace Ecommerce.Domain.Entities
         public string AccountNo { get; set; }
         public string Expiry { get; set; }
         public OrderDetails OrderDetails { get; set; }
+        public ICollection<UserPayment> UserPayments { get; set; }
     }
 }

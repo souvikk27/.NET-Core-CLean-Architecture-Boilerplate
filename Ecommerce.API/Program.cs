@@ -24,7 +24,6 @@ builder.Services.ConfigureInfrastructure();
 builder.Services.ConfigureIdentity();
 builder.Services.TriggerOpenIdAuthentication();
 builder.Services.ConfigureSqlContext(configuration);
-builder.Services.ConfigureDbSeed();
 builder.Services.InvokeOauthClient();
 builder.Services.ConfigureSwaggerGen();
 builder.Services.ConfigureCors();
@@ -38,7 +37,7 @@ var app = builder.Build();
 var logger = app.Services.GetRequiredService<ILoggerManager>();
 
 app.ConfigureExceptionHandler(logger);
-app.ConfigureDatabaseSeed();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

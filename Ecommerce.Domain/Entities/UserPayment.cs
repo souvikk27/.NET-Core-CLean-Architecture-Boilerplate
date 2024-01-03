@@ -12,6 +12,8 @@ namespace Ecommerce.Domain.Entities
         [Key]
         public Guid Id { get; set; }
         public Guid UserId { get; set; }
+        public ApplicationUser User { get; set; }
+        public Guid PaymentId { get; set; }
         public Payment Payment { get; set; }
     }
 }

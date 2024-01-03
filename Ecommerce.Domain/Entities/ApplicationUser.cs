@@ -1,9 +1,5 @@
 using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace Ecommerce.Domain.Entities
 {
@@ -19,6 +15,10 @@ namespace Ecommerce.Domain.Entities
         public ICollection<OrderDetails>? Orders { get; set; }
         [JsonIgnore]
         public ICollection<ShoppingSession>? ShoppingSessions { get; set; }
+        [JsonIgnore]
+        public ICollection<UserAddress>? UserAddresses { get; set; }
+        [JsonIgnore]
+        public ICollection<UserPayment>? UserPayments { get; set; }
     }
 
 }

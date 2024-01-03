@@ -32,27 +32,27 @@ namespace Ecommerce.Presentation.Controller
         }
 
 
-        [HttpGet]
-        public IActionResult GetProducts([FromQuery] ProductsParameters parameters)
-        {
-            var page = parameters.PageNumber;
-            var pageSize = parameters.PageSize;
-            var skipCount = (page - 1) * pageSize;
+        //[HttpGet]
+        //public IActionResult GetProducts([FromQuery] ProductsParameters parameters)
+        //{
+        //    var page = parameters.PageNumber;
+        //    var pageSize = parameters.PageSize;
+        //    var skipCount = (page - 1) * pageSize;
 
-            var filteredProducts = repository.GetAll()
-                                   .Where(product =>
-                                    (parameters.MinPrice <= product.Price) &&
-                                    (parameters.MaxPrice >= product.Price) &&
-                                    (parameters.AddedOn == DateTime.MinValue || parameters.AddedOn == product.AddedOn) &&
-                                    (string.IsNullOrEmpty(parameters.Sku) || parameters.Sku == product.SKU))
-                                    .ToList();
-            var totalItemCount = filteredProducts.Count;
+        //    var filteredProducts = repository.GetAll()
+        //                           .Where(product =>
+        //                            (parameters.MinPrice <= product.Price) &&
+        //                            (parameters.MaxPrice >= product.Price) &&
+        //                            (parameters.AddedOn == DateTime.MinValue || parameters.AddedOn == product.AddedOn) &&
+        //                            (string.IsNullOrEmpty(parameters.Sku) || parameters.Sku == product.SKU))
+        //                            .ToList();
+        //    var totalItemCount = filteredProducts.Count;
 
-            var metadata = new MetaData().Initialize(page, pageSize, totalItemCount);
-            metadata.AddResponseHeaders(Response);
-            var pagedList = PagedList<Product>.ToPagedList(filteredProducts, page, pageSize);
-            return Ok(pagedList);
-        }
+        //    var metadata = new MetaData().Initialize(page, pageSize, totalItemCount);
+        //    metadata.AddResponseHeaders(Response);
+        //    var pagedList = PagedList<Product>.ToPagedList(filteredProducts, page, pageSize);
+        //    return Ok(pagedList);
+        //}
 
 
         [HttpGet("{id}")]

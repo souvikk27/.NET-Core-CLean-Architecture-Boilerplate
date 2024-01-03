@@ -33,6 +33,10 @@ public class ApplicationContext : IdentityDbContext<ApplicationUser, IdentityRol
 
     public virtual DbSet<ProductCategory> ProductCategory { get; set; }
 
+    public virtual DbSet<UserAddress> UserAddress { get; set; }
+
+    public virtual DbSet<UserPayment> UserPayment { get; set; }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -86,12 +90,14 @@ public class ApplicationContext : IdentityDbContext<ApplicationUser, IdentityRol
         builder.Entity<ProductCategory>()
             .HasOne(pc => pc.Product)
             .WithMany(p => p.ProductCategories)
-            .HasForeignKey(pc => pc.ProductId);
+            .HasForeignKey(pc => pc.ProductId)
+            .OnDelete(DeleteBehavior.NoAction); 
 
         builder.Entity<ProductCategory>()
             .HasOne(pc => pc.Category)
             .WithMany(c => c.ProductCategories)
-            .HasForeignKey(pc => pc.CategoryId);
+            .HasForeignKey(pc => pc.CategoryId)
+            .OnDelete(DeleteBehavior.NoAction); 
 
         builder.Entity<Product>()
             .HasOne(p => p.Discount)
@@ -111,7 +117,7 @@ public class ApplicationContext : IdentityDbContext<ApplicationUser, IdentityRol
         builder.Entity<OrderDetails>()
             .HasOne(od => od.User)
             .WithMany(u => u.Orders)
-            .HasForeignKey(od => od.UserId);
+            .HasPrincipalKey(od => od.Id);
 
         builder.Entity<OrderDetails>()
             .HasOne(od => od.OrderPayment)
@@ -121,12 +127,12 @@ public class ApplicationContext : IdentityDbContext<ApplicationUser, IdentityRol
         builder.Entity<ShoppingSession>()
             .HasOne(ss => ss.User)
             .WithMany(u => u.ShoppingSessions)
-            .HasForeignKey(ss => ss.UserId);
+            .HasPrincipalKey(ss => ss.Id);
 
         builder.Entity<ApplicationUser>()
             .HasMany(u => u.ShoppingSessions)
             .WithOne(ss => ss.User)
-            .HasForeignKey(ss => ss.UserId);
+            .HasPrincipalKey(ss => ss.Id);
 
         builder.Entity<CartProduct>()
         .HasKey(cp => new { cp.CartId, cp.ProductId });
@@ -140,6 +146,24 @@ public class ApplicationContext : IdentityDbContext<ApplicationUser, IdentityRol
             .HasOne(cp => cp.Product)
             .WithMany(p => p.CartProducts)
             .HasForeignKey(cp => cp.ProductId);
+
+        builder.Entity<UserAddress>()
+            .HasOne(ua => ua.User)
+            .WithMany(u => u.UserAddresses)
+            .HasPrincipalKey(ua => ua.Id);
+
+        builder.Entity<UserPayment>()
+        .HasKey(up => up.Id);
+
+        builder.Entity<UserPayment>()
+            .HasOne(up => up.User)
+            .WithMany(u => u.UserPayments)
+            .HasPrincipalKey(up => up.Id);
+
+        builder.Entity<UserPayment>()
+            .HasOne(up => up.Payment)
+            .WithMany(p => p.UserPayments)
+            .HasForeignKey(up => up.PaymentId);
     }
     
 }
