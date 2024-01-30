@@ -88,7 +88,7 @@ namespace Ecommerce.Presentation.Controller
         [HttpDelete("{id}")]
         public IActionResult DeleteProduct(Guid id)
         {
-            var product = repository.GetById(id);   
+            var product = repository.GetById(id);
             repository.Remove(product);
             repository.Save();
             var apimodel = new ApiResponseModel<Product>(ApiResponseStatusEnum.Success,

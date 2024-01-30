@@ -10,5 +10,6 @@ namespace Ecommerce.Presentation.Infrastructure.Filtering
     {
         public string? CategoryName { get; set; }
         public DateTime AddedOn { get; set; }
+
     }
 }

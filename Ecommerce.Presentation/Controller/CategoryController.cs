@@ -1,24 +1,24 @@
 using Ecommerce.Presentation.Infrastructure.Extensions;
 using Ecommerce.Presentation.Infrastructure.Filtering;
 using Ecommerce.Presentation.Infrastructure.Utils;
-using Microsoft.AspNetCore.Authorization;
-using Mapster;
+
 
 namespace Ecommerce.Presentation.Controller
 {
     [ApiController]
-    [Route("api/v1/[controller]")]
+    [Route("api/v1/category")]
     public class CategoryController : ControllerBase
     {
         private readonly CategoryRepository repository;
-        public CategoryController(CategoryRepository repository)
+        private readonly ApplicationContext _context; 
+        public CategoryController(CategoryRepository repository, ApplicationContext context)
         {
             this.repository = repository;
+            _context = context;
         }
 
 
         [HttpGet]
-        [RateLimit(5, 5)]
         public IActionResult GetAllCategories([FromQuery] CategoryParameters parameters)
         {
             var page = parameters.PageNumber;
@@ -37,10 +37,16 @@ namespace Ecommerce.Presentation.Controller
             return Ok(pagedList);
         }
 
+        [HttpGet]
+        [Route("subcategories")]
+        public IActionResult GetSubcategories()
+        {
+            var subcategories = repository.GetCategoriesWithChildrenJson();
+            return Ok(subcategories);
+        }
 
 
         [HttpGet("{id}")]
-        [RateLimit(20, 60)]
         public IActionResult GetCategoryById(Guid id)
         {
             var category = repository.GetById(id);

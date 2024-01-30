@@ -1,22 +1,11 @@
 ﻿using Ecommerce.OpenAPI.Auth;
-using Ecommerce.OpenAPI.Auth.AuthEntity;
 using Ecommerce.Presentation.Extensions;
-using Ecommerce.Presentation.Static;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
-using OpenIddict.Abstractions;
-using OpenIddict.Client.AspNetCore;
 using System.Collections.Immutable;
-using System.Net;
-using static Dapper.SqlMapper;
 using static OpenIddict.Abstractions.OpenIddictConstants;
-using static System.Formats.Asn1.AsnWriter;
 using IAuthenticationService = Ecommerce.OpenAPI.Auth.Abstraction.IAuthenticationService;
 
 
@@ -179,15 +168,12 @@ public class OpenIdController : ControllerBase
         var request = HttpContext.GetOpenIddictServerRequest() ??
             throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
 
-        // Retrieve the profile of the logged in user.
         var user = await _userManager.GetUserAsync(User) ??
             throw new InvalidOperationException("The user details cannot be retrieved.");
 
-        // Retrieve the application details from the database.
         var application = await _applicationManager.FindByClientIdAsync(request.ClientId) ??
             throw new InvalidOperationException("Details concerning the calling client application cannot be found.");
 
-        // Retrieve the permanent authorizations associated with the user and the calling client application.
         var authorizations = await _authorizationManager.FindAsync(
             subject: await _userManager.GetUserIdAsync(user),
             client: await _applicationManager.GetIdAsync(application),
@@ -195,9 +181,6 @@ public class OpenIdController : ControllerBase
             type: AuthorizationTypes.Permanent,
             scopes: request.GetScopes()).ToListAsync();
 
-        // Note: the same check is already made in the other action but is repeated
-        // here to ensure a malicious user can't abuse this POST-only endpoint and
-        // force it to return a valid response without the external authorization.
         if (!authorizations.Any() && await _applicationManager.HasConsentTypeAsync(application, ConsentTypes.External))
         {
             return Forbid(
@@ -248,8 +231,7 @@ public class OpenIdController : ControllerBase
 
     [Authorize, FormValueRequired("submit.Deny")]
     [HttpPost("~/connect/authorize"), ValidateAntiForgeryToken]
-    // Notify OpenIddict that the authorization grant has been denied by the resource owner
-    // to redirect the user agent to the client application using the appropriate response_mode.
+
     public IActionResult Deny() => Forbid(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
 
 
